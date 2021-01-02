@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Train</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+				font-family: "Arial";
+			}
+
+			#wrapper {
+				display: flex;
+				flex-direction: column;
+				height: 100vh;
+			}
+
+			#messages {
+				flex: 1;
+				padding: 1rem;
+
+				display: flex;
+				flex-direction: column;
+
+				width: 60%;
+				margin: auto;
+
+				overflow-y: scroll;
+			}
+
+			#messages > * {
+				border-radius: 1rem;
+				padding: 1rem;
+				background-color: #0cf;
+			}
+
+			#messages .left {
+				align-self: flex-start;
+			}
+
+			#messages .right {
+				align-self: flex-end;
+			}
+
+			#form {
+				padding: 1rem;
+				display: flex;
+			}
+
+			#form input {
+				padding: 0.5rem;
+				border: 1px solid black;
+				outline: 0;
+			}
+
+			#form input[type="text"] {
+				background-color: #0cf;
+				margin-right: 1rem;
+				flex: 1;
+			}
+
+			#form input[type="submit"] {
+				background-color: #0cf;
+
+			}
+		</style>
+	</head>
+	<body>
+		<div id="wrapper">
+			<div id="messages">
+
+			</div>
+			<form action="POST" id="form">
+				<input type="text" id="messagebox" autocomplete="off">
+				<input type="submit" value="Send">
+			</form>
+		</div>
+		<script>
+			var messages_div = document.getElementById("messages");
+			function addMessage(message, side) {
+				var message_p = document.createElement("div");
+				message_p.classList.add(side);
+				message_p.textContent = message;
+				messages_div.append(message_p);
+				messages_div.scrollTop = messages_div.scrollHeight;
+			}
+
+			var form = document.getElementById("form");
+			form.addEventListener("submit", (e) => {
+				e.preventDefault();
+
+				var messagebox = document.getElementById("messagebox");
+				var message = messagebox.value;
+
+				addMessage(message, "right");
+				messagebox.value = "";
+
+				var xhr = new XMLHttpRequest();
+				xhr.open("POST", "/message");
+				xhr.setRequestHeader('Content-Type', 'application/json');
+				xhr.addEventListener("load", (e) => {
+					addMessage(xhr.responseText, "left");
+				});
+				xhr.send(JSON.stringify(message));
+			});
+		</script>
+	</body>
+</html>
