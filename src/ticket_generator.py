@@ -20,7 +20,7 @@ class Station:
 		return self.code
 
 	def __str__(self):
-		return f"Station<{self.name}, {self.postcode}, {self.code}>"
+		return f"Station<{self.name!r}, {self.postcode!r}, {self.code!r}>"
 
 	def __repr__(self):
 		return str(self)
@@ -36,7 +36,7 @@ class Ticket:
         self.provider = provider
     
     def __str__(self):
-        return f"Ticket<{self.leave_at}, {self.arrive_at}, {self.travel_time}, {self.no_of_changes}, {self.price}, {self.name}, {self.provider}>"
+        return f"Ticket<{self.leave_at}, {self.arrive_at}, {self.travel_time}, {self.no_of_changes}, {self.price}, {self.name!r}, {self.provider!r}>"
 
     def __repr__(self):
         return str(self)
@@ -50,7 +50,6 @@ def get_tickets(from_station, to_station, time_date = None, arriving = False, is
         time_date = datetime.datetime.now()
     try:
         stations = get_stations()
-        #print(stations)
         
         if is_return:
             # work this out 
@@ -67,9 +66,7 @@ def get_tickets(from_station, to_station, time_date = None, arriving = False, is
             tickets = []
             for each in soup.select("#oft > tbody > tr.mtx"):
                 fare = each.select_one(".fare-breakdown input[type=\"hidden\"]").get("value").split("|")[:-1]
-                name = "'"+fare[2]
-                name += ", "
-                name += fare[3]+"'"
+                name = fare[2] + ", " + fare[3]
                 price = fare[5]
                 provider = fare[11]
                 journey = each.select_one(".journey-breakdown input[type=\"hidden\"]").get("value").split("|")[:-1]
@@ -82,9 +79,10 @@ def get_tickets(from_station, to_station, time_date = None, arriving = False, is
                 changes = journey[8]
                 tickets.append(Ticket(leave, arrive, changes, price, name, provider))
                 print(tickets[-1])
-                print()
+                
         return tickets
-    except:
+    except Exception as e:
+        print(e)
         print("'stations.json' is Missing or Corrupted.")
         raise ValueError
     #ojp.nationalrail.co.uk/service/timesandfares/FROMSTATION/TOSTATION/DATE1/TIME1/DEP|ARR/DATE2/TIME2/DEP2|ARR2
