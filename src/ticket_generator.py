@@ -86,8 +86,5 @@ def get_tickets(from_station, to_station, time_date = None, arriving = False, is
         print("'stations.json' is Missing or Corrupted.")
         raise ValueError
     #ojp.nationalrail.co.uk/service/timesandfares/FROMSTATION/TOSTATION/DATE1/TIME1/DEP|ARR/DATE2/TIME2/DEP2|ARR2
-     
-
-
 
 get_tickets("NRW", "CRK", datetime.datetime.now())
