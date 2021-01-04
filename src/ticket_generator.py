@@ -51,7 +51,7 @@ def get_tickets(from_station, to_station, time_date = None, arriving = False, is
     try:
         stations = get_stations()
         #print(stations)
-        # if from_station is in stations && to_station is in stations
+        
         if is_return:
             # work this out 
             #ojp.nationalrail.co.uk/service/timesandfares/FROMSTATION/TOSTATION/DATE1/TIME1/DEP|ARR/DATE2/TIME2/DEP2|ARR2
@@ -77,18 +77,19 @@ def get_tickets(from_station, to_station, time_date = None, arriving = False, is
                 leave = time_date.replace(hour= int(leave.split(":")[0]), minute= int(leave.split(":")[1]))
                 arrive = journey[5]
                 arrive = time_date.replace(hour= int(arrive.split(":")[0]), minute= int(arrive.split(":")[1]))
+                if arrive - leave < datetime.timedelta(days=0):
+                    arrive = arrive.replace(day= arrive.day + 1)
                 changes = journey[8]
                 tickets.append(Ticket(leave, arrive, changes, price, name, provider))
                 print(tickets[-1])
                 print()
-                # print(each.parent.parent)
-            # print([x.text.replace("\t","").replace("\n","") for x in soup.select("#oft .mtx")]) .journey-breakdown
-        # sort and return Ticket(s) here
+        return tickets
     except:
         print("'stations.json' is Missing or Corrupted.")
+        raise ValueError
     #ojp.nationalrail.co.uk/service/timesandfares/FROMSTATION/TOSTATION/DATE1/TIME1/DEP|ARR/DATE2/TIME2/DEP2|ARR2
      
 
 
 
-get_tickets("NRW", "CBG")
+get_tickets("NRW", "CRK", datetime.datetime.now())
