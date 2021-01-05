@@ -8,6 +8,6 @@ By Aaron Campbell, Daniel Gee and Jack Demonakis
 	- requests
 	- bs4
 	- spacy
-		- en_core_web_sm
+		- en_core_web_lg
 	- flask
 	

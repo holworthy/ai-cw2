@@ -30,6 +30,14 @@ class Station:
 		with open("data/stations.json", "r") as f:
 			return [Station(row["name"], row["postcode"], row["code"]) for row in json.load(f)]
 
+	@staticmethod
+	def is_a_station(station_name):
+		stations = Station.get_stations()
+		for station in stations:
+			if station_name == station.get_name() or station_name == station.get_code() or station_name == station.get_postcode():
+				return True
+		return False
+
 class Ticket:
 	def __init__(self, leave_at, arrive_at, no_changes, price, name, provider):
 		self.leave_at = leave_at
@@ -46,19 +54,12 @@ class Ticket:
 	def __repr__(self):
 		return str(self)
 
-def is_a_station(station_name):
-    stations = Station.get_stations()
-    for station in stations:
-        if station_name == station.get_name() or station_name == station.get_code() or station_name == station.get_postcode():
-            return True
-    return False
-
 def get_tickets(from_station, to_station, time_date = None, arriving = False, is_return = False, return_time_date = None):
 	if not time_date:
 		time_date = datetime.datetime.now()
 	try:
 		stations = Station.get_stations()
-		if is_a_station(from_station) and is_a_station(to_station):
+		if Station.is_a_station(from_station) and Station.is_a_station(to_station):
 			for station in stations:
 				if to_station == station.get_name() or to_station == station.get_code() or to_station == station.get_postcode():
 					to_station = station.get_code()
