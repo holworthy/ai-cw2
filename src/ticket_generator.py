@@ -48,6 +48,9 @@ class Ticket:
 		self.name = name
 		self.provider = provider
 	
+	def get_price(self):
+		return self.price
+
 	def __str__(self):
 		return f"Ticket<{self.leave_at}, {self.arrive_at}, {self.travel_time}, {self.no_of_changes}, {self.price}, {self.name!r}, {self.provider!r}>"
 
@@ -103,4 +106,11 @@ def get_tickets(from_station, to_station, time_date = None, arriving = False, is
 		raise ValueError
 	#ojp.nationalrail.co.uk/service/timesandfares/FROMSTATION/TOSTATION/DATE1/TIME1/DEP|ARR/DATE2/TIME2/DEP2|ARR2
 
-get_tickets("NR1 1EF", "CM1 1AS", datetime.datetime.now())
+def get_cheapest_ticket(from_station, to_station, time_date = None, arriving = False, is_return = False, return_time_date = None):
+	tickets = get_tickets(from_station, to_station, time_date, arriving, is_return, return_time_date)
+	tickets.sort(key = lambda tickets: tickets.get_price())
+	print("Cheapest Ticket:\n")
+	print(tickets[-1])
+
+get_cheapest_ticket("Norwich", "SLD", datetime.datetime.now())
+# get_tickets("NR1 1EF", "CM1 1AS", datetime.datetime.now())
