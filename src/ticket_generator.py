@@ -62,7 +62,11 @@ def get_tickets(from_station, to_station, time_date = None, arriving = False, is
 		time_date = datetime.datetime.now()
 	try:
 		stations = Station.get_stations()
-		if Station.is_a_station(from_station) and Station.is_a_station(to_station):
+	except Exception as e:
+		print(e)
+		print("'stations.json' is Missing or Corrupted.")
+		raise ValueError
+	if Station.is_a_station(from_station) and Station.is_a_station(to_station):
 			for station in stations:
 				if to_station == station.get_name() or to_station == station.get_code() or to_station == station.get_postcode():
 					to_station = station.get_code()
@@ -82,28 +86,26 @@ def get_tickets(from_station, to_station, time_date = None, arriving = False, is
 				
 				tickets = []
 				for each in soup.select("#oft > tbody > tr.mtx"):
-					fare = each.select_one(".fare-breakdown input[type=\"hidden\"]").get("value").split("|")[:-1]
-					name = fare[2] + ", " + fare[3]
-					price = fare[5]
-					provider = fare[11]
-					journey = each.select_one(".journey-breakdown input[type=\"hidden\"]").get("value").split("|")[:-1]
-					leave = journey[2]
-					leave = time_date.replace(hour= int(leave.split(":")[0]), minute= int(leave.split(":")[1]))
-					arrive = journey[5]
-					arrive = time_date.replace(hour= int(arrive.split(":")[0]), minute= int(arrive.split(":")[1]))
-					if arrive - leave < datetime.timedelta(days=0):
-						arrive = arrive.replace(day= arrive.day + 1)
-					changes = journey[8]
-					tickets.append(Ticket(leave, arrive, changes, price, name, provider))
-					print(tickets[-1])
+					fare_select = each.select_one(".fare-breakdown input[type=\"hidden\"]")
+					if fare_select:
+						fare = fare_select.get("value").split("|")[:-1]
+						name = fare[2] + ", " + fare[3]
+						price = fare[5]
+						provider = fare[11]
+						journey = each.select_one(".journey-breakdown input[type=\"hidden\"]").get("value").split("|")[:-1]
+						leave = journey[2]
+						leave = time_date.replace(hour= int(leave.split(":")[0]), minute= int(leave.split(":")[1]))
+						arrive = journey[5]
+						arrive = time_date.replace(hour= int(arrive.split(":")[0]), minute= int(arrive.split(":")[1]))
+						if arrive - leave < datetime.timedelta(days=0):
+							arrive = arrive.replace(day= arrive.day + 1)
+						changes = journey[8]
+						tickets.append(Ticket(leave, arrive, changes, price, name, provider))
+						print(tickets[-1])
 			return tickets
 		else:
 			print("error with stations")
 			raise ValueError
-	except Exception as e:
-		print(e)
-		print("'stations.json' is Missing or Corrupted.")
-		raise ValueError
 	#ojp.nationalrail.co.uk/service/timesandfares/FROMSTATION/TOSTATION/DATE1/TIME1/DEP|ARR/DATE2/TIME2/DEP2|ARR2
 
 def get_cheapest_ticket(from_station, to_station, time_date = None, arriving = False, is_return = False, return_time_date = None):
@@ -112,5 +114,5 @@ def get_cheapest_ticket(from_station, to_station, time_date = None, arriving = F
 	print("Cheapest Ticket:\n")
 	print(tickets[-1])
 
-get_cheapest_ticket("Norwich", "SLD", datetime.datetime.now())
+get_cheapest_ticket("Norwich", "PDG", datetime.datetime.now())
 # get_tickets("NR1 1EF", "CM1 1AS", datetime.datetime.now())
