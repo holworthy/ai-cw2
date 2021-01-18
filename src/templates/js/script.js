@@ -25,3 +25,6 @@ form.addEventListener("submit", (e) => {
 	});
 	xhr.send(JSON.stringify(message));
 });
+
+addMessage("Hi, I am trainbot!", "left");
+addMessage("How can I help you?", "left");

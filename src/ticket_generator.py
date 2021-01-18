@@ -39,8 +39,17 @@ class Station:
 				return True
 		return False
 
+	@staticmethod
+	def get_from_name(name):
+		for station in Station.get_stations():
+			if station.get_name() == name:
+				return station
+		return None
+
 class Ticket:
-	def __init__(self, leave_at, arrive_at, no_changes, price, name, provider):
+	def __init__(self, from_station, to_station, leave_at, arrive_at, no_changes, price, name, provider, link = None):
+		self.from_station = from_station
+		self.to_station = to_station
 		self.leave_at = leave_at
 		self.arrive_at = arrive_at
 		self.travel_time = arrive_at - leave_at
@@ -48,12 +57,13 @@ class Ticket:
 		self.price = price
 		self.name = name
 		self.provider = provider
+		self.link = link
 	
 	def get_price(self):
 		return self.price
 
 	def __str__(self):
-		return f"Ticket<{self.leave_at}, {self.arrive_at}, {self.travel_time}, {self.no_of_changes}, {self.price}, {self.name!r}, {self.provider!r}>"
+		return f"Ticket<{self.from_station}, {self.to_station}, {self.leave_at}, {self.arrive_at}, {self.travel_time}, {self.no_of_changes}, {self.price}, {self.name!r}, {self.provider!r}>"
 
 	def __repr__(self):
 		return str(self)
@@ -64,49 +74,38 @@ def get_tickets(from_station, to_station, time_date = None, arriving = False, is
 	try:
 		stations = Station.get_stations()
 	except Exception as e:
-		print(e)
-		print("'stations.json' is Missing or Corrupted.")
-		raise ValueError
-	if Station.is_a_station(from_station) and Station.is_a_station(to_station):
-		for station in stations:
-			if to_station == station.get_name() or to_station == station.get_code() or to_station == station.get_postcode():
-				to_station = station.get_code()
-			if from_station == station.get_name() or from_station == station.get_code() or from_station == station.get_postcode():
-				from_station = station.get_code()
-		if is_return:
-			# work this out 
-			#ojp.nationalrail.co.uk/service/timesandfares/FROMSTATION/TOSTATION/DATE1/TIME1/DEP|ARR/DATE2/TIME2/DEP2|ARR2
-			pass
-		else:
-			date1 = time_date.strftime("%d%m%y")
-			time1 = time_date.strftime("%H%M")
-			deparr1 = "arr" if arriving else "dep"
-			url = f"https://ojp.nationalrail.co.uk/service/timesandfares/{from_station}/{to_station}/{date1}/{time1}/{deparr1}"
-			response = requests.get(url)
-
-			soup = bs4.BeautifulSoup(response.content, "html.parser")
-			tickets = []
-			for each in soup.select("#oft > tbody > tr.mtx"):
-				fare_select = each.select_one(".fare-breakdown input[type=\"hidden\"]")
-				if fare_select:
-					fare = fare_select.get("value").split("|")[:-1]
-					name = fare[2] + ", " + fare[3]
-					price = fare[5]
-					provider = fare[11]
-					journey = each.select_one(".journey-breakdown input[type=\"hidden\"]").get("value").split("|")[:-1]
-					leave = journey[2]
-					leave = time_date.replace(hour= int(leave.split(":")[0]), minute= int(leave.split(":")[1]))
-					arrive = journey[5]
-					arrive = time_date.replace(hour= int(arrive.split(":")[0]), minute= int(arrive.split(":")[1]))
-					if arrive - leave < datetime.timedelta(days=0):
-						arrive = arrive.replace(day= arrive.day + 1)
-					changes = journey[8]
-					tickets.append(Ticket(leave, arrive, changes, price, name, provider))
-					print(tickets[-1])
-		return tickets
+		raise ValueError("'stations.json' is Missing or Corrupted.")
+	if is_return:
+		# work this out 
+		#ojp.nationalrail.co.uk/service/timesandfares/FROMSTATION/TOSTATION/DATE1/TIME1/DEP|ARR/DATE2/TIME2/DEP2|ARR2
+		pass
 	else:
-		print("error with stations")
-		raise ValueError
+		date1 = time_date.strftime("%d%m%y")
+		time1 = time_date.strftime("%H%M")
+		deparr1 = "arr" if arriving else "dep"
+		url = f"https://ojp.nationalrail.co.uk/service/timesandfares/{from_station.get_code()}/{to_station.get_code()}/{date1}/{time1}/{deparr1}"
+		response = requests.get(url)
+
+		soup = bs4.BeautifulSoup(response.content, "html.parser")
+		tickets = []
+		for each in soup.select("#oft > tbody > tr.mtx"):
+			fare_select = each.select_one(".fare-breakdown input[type=\"hidden\"]")
+			if fare_select:
+				fare = fare_select.get("value").split("|")[:-1]
+				name = fare[2] + ", " + fare[3]
+				price = fare[5]
+				provider = fare[11]
+				journey = each.select_one(".journey-breakdown input[type=\"hidden\"]").get("value").split("|")[:-1]
+				leave = journey[2]
+				leave = time_date.replace(hour= int(leave.split(":")[0]), minute= int(leave.split(":")[1]))
+				arrive = journey[5]
+				arrive = time_date.replace(hour= int(arrive.split(":")[0]), minute= int(arrive.split(":")[1]))
+				if arrive - leave < datetime.timedelta(days=0):
+					arrive = arrive.replace(day= arrive.day + 1)
+				changes = journey[8]
+				tickets.append(Ticket(from_station, to_station, leave, arrive, changes, price, name, provider, url))
+				print(tickets[-1])
+	return tickets
 	#ojp.nationalrail.co.uk/service/timesandfares/FROMSTATION/TOSTATION/DATE1/TIME1/DEP|ARR/DATE2/TIME2/DEP2|ARR2
 
 def get_cheapest_ticket(from_station, to_station, time_date = None, arriving = False, is_return = False, return_time_date = None):
@@ -114,5 +113,3 @@ def get_cheapest_ticket(from_station, to_station, time_date = None, arriving = F
 	tickets.sort(key = lambda tickets: tickets.get_price())
 	print("Cheapest Ticket:\n")
 	print(tickets[-1])
-
-get_tickets("Norwich", "Chirk")
