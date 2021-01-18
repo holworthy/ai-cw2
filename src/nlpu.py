@@ -46,7 +46,7 @@ def process_message(message):
     if not from_station or not to_station:
         return "I need to know where you are coming from and where you want to go to."
 
-    return str(ticket_generator.get_tickets(from_station, to_station))
+    return str(ticket_generator.get_tickets(from_station, to_station, time))
 
 
 process_message("11/21 12:01")
