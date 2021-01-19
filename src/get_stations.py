@@ -18,7 +18,7 @@ with open("data/stations.json", "w") as f:
 			data = [x.text.strip() for x in row.select("td")]
 			if data and re.match("^[A-Z]{1,2}[0-9]{1,2} [0-9][A-Z]{2}$", data[1]) and data[-1]:
 				stations.append({
-					"name": data[0],
+					"name": data[0].replace("'", ""),
 					"postcode": data[1],
 					"code": data[-1][:3]
 				})

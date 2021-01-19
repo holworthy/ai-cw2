@@ -45,6 +45,13 @@ class Station:
 			if station.get_name() == name:
 				return station
 		return None
+	
+	@staticmethod
+	def get_from_code(code):
+		for station in Station.get_stations():
+			if station.get_code() == code:
+				return station
+		return None
 
 class Ticket:
 	def __init__(self, from_station, to_station, leave_at, arrive_at, no_changes, price, name, provider, link = None):
@@ -68,45 +75,87 @@ class Ticket:
 	def __repr__(self):
 		return str(self)
 
-def get_tickets(from_station, to_station, time_date = None, arriving = False, is_return = False, return_time_date = None):
-	if not time_date:
-		time_date = datetime.datetime.now()
-	try:
-		stations = Station.get_stations()
-	except Exception as e:
-		raise ValueError("'stations.json' is Missing or Corrupted.")
-	if is_return:
-		# work this out 
-		#ojp.nationalrail.co.uk/service/timesandfares/FROMSTATION/TOSTATION/DATE1/TIME1/DEP|ARR/DATE2/TIME2/DEP2|ARR2
+class Railcard:
+	def __init__(self):
 		pass
-	else:
-		date1 = time_date.strftime("%d%m%y")
-		time1 = time_date.strftime("%H%M")
-		deparr1 = "arr" if arriving else "dep"
-		url = f"https://ojp.nationalrail.co.uk/service/timesandfares/{from_station.get_code()}/{to_station.get_code()}/{date1}/{time1}/{deparr1}"
-		response = requests.get(url)
 
-		soup = bs4.BeautifulSoup(response.content, "html.parser")
-		tickets = []
-		for each in soup.select("#oft > tbody > tr.mtx"):
-			fare_select = each.select_one(".fare-breakdown input[type=\"hidden\"]")
-			if fare_select:
-				fare = fare_select.get("value").split("|")[:-1]
-				name = fare[2] + ", " + fare[3]
-				price = fare[5]
-				provider = fare[11]
-				journey = each.select_one(".journey-breakdown input[type=\"hidden\"]").get("value").split("|")[:-1]
-				leave = journey[2]
-				leave = time_date.replace(hour= int(leave.split(":")[0]), minute= int(leave.split(":")[1]))
-				arrive = journey[5]
-				arrive = time_date.replace(hour= int(arrive.split(":")[0]), minute= int(arrive.split(":")[1]))
-				if arrive - leave < datetime.timedelta(days=0):
-					arrive = arrive.replace(day= arrive.day + 1)
-				changes = journey[8]
-				tickets.append(Ticket(from_station, to_station, leave, arrive, changes, price, name, provider, url))
-				print(tickets[-1])
+def get_tickets(from_station, to_station, when = None, arriving = False, is_return = False, return_when = None, return_arriving = False, adults = 1, children = 0, railcards = []):
+	if not when:
+		when = datetime.datetime.now()
+	if not return_when:
+		return_when = datetime.datetime.now()
+
+	# You have to get these 3 pages before the main request or it doesn't work.
+	# Do I know why? No. Not really. It's probably to do with cookies.
+	# But that's someone else's problem now. :)
+	session = requests.Session()
+	session.get("https://www.nationalrail.co.uk/")
+	session.get("https://ojp.nationalrail.co.uk/personal/member/welcome")
+	session.get("https://ojp.nationalrail.co.uk/personal/omnibar/basket")
+	response = session.post("https://ojp.nationalrail.co.uk/service/planjourney/plan", data = {
+		"jpState": "1ingle" if is_return else "01ngle",
+		"commandName": "journeyPlannerCommand",
+		"from.searchTerm": from_station.get_name(),
+		"to.searchTerm": to_station.get_name(),
+		"timeOfOutwardJourney.arrivalOrDeparture": "ARRIVE" if arriving else "DEPART",
+		"timeOfOutwardJourney.monthDay": when.strftime("%d/%m/%Y"),
+		"timeOfOutwardJourney.hour": when.hour,
+		"timeOfOutwardJourney.minute": when.minute,
+		"checkbox": "true",
+		"_checkbox": "on",
+		"timeOfReturnJourney.arrivalOrDeparture": "ARRIVE" if return_arriving else "DEPART",
+		"timeOfReturnJourney.monthDay": return_when.strftime("%d/%m/%Y"),
+		"timeOfReturnJourney.hour": return_when.hour,
+		"timeOfReturnJourney.minute": return_when.minute,
+		"_showFastestTrainsOnly": "on",
+		"numberOfAdults": adults,
+		"numberOfChildren": children,
+		"firstClass": "true",
+		"_firstClass": "on",
+		"standardClass": "true",
+		"_standardClass": "on",
+		"rcards": "",
+		"numberOfEachRailcard": "0",
+		"railcardCodes": "",
+		"viaMode": "VIA",
+		"via.searchTerm": "Station",
+		"via1.searchTerm": "Station",
+		"via2.searchTerm": "Station",
+		"offSetOption": "0",
+		"operator.code": "",
+		"_reduceTransfers": "on",
+		"_lookForSleeper": "on",
+		"_directTrains": "on"
+	})
+	soup = bs4.BeautifulSoup(response.content, "html.parser")
+	mtx_rows = soup.select("#oft .mtx")
+
+	tickets = []
+	for mtx_row in mtx_rows:
+		price = 0
+		name = "Ticket"
+		provider = "Unknown"
+		fare_breakdowns = [x.get("value").split("|") for x in mtx_row.select(".fare-breakdown input")]
+		for fare_breakdown in fare_breakdowns:
+			price += float(fare_breakdown[5])
+			name = fare_breakdown[3]
+			provider = fare_breakdown[11]
+		journey_breakdown = mtx_row.select_one(".journey-breakdown input").get("value").split("|")
+
+		tickets.append(Ticket(
+			from_station,
+			to_station,
+			when.replace(hour = int(journey_breakdown[2].split(":")[0]), minute = int(journey_breakdown[2].split(":")[1])),
+			when.replace(hour = int(journey_breakdown[5].split(":")[0]), minute = int(journey_breakdown[5].split(":")[1])),
+			journey_breakdown[8],
+			price,
+			name,
+			provider,
+			"https://ojp.nationalrail.co.uk/service/timesandfares/" + from_station.get_code() + "/" + to_station.get_code() + "/" + when.strftime("%d%m%y") + "/" + when.strftime("%H%M") + "/" + ("arr" if arriving else "dep")
+		))
+
 	return tickets
-	#ojp.nationalrail.co.uk/service/timesandfares/FROMSTATION/TOSTATION/DATE1/TIME1/DEP|ARR/DATE2/TIME2/DEP2|ARR2
+
 
 def get_cheapest_ticket(from_station, to_station, time_date = None, arriving = False, is_return = False, return_time_date = None):
 	tickets = get_tickets(from_station, to_station, time_date, arriving, is_return, return_time_date)
