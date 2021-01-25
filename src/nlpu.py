@@ -9,7 +9,7 @@ class Ticket_Request:
     def __init__(self):
         self.from_station = None
         self.to_station = None
-        self.time1 = None
+        self.time1 = datetime.datetime.now()
         self.dep_arr1 = False
         self.is_return = False
         self.time2 = None
@@ -69,12 +69,7 @@ def get_dates(message):
 def process_message(message):
     doc = nlp(message)
 
-    from_station_name = None
-    to_station_name = None
-    time = None
-    arriving = False
-    is_return = False
-    return_time = None
+    ticket_request = Ticket_Request()
 
     # get Stations
     for ent in doc.ents:
@@ -82,8 +77,8 @@ def process_message(message):
             from_station_name = str(ent).title()
         elif "to " + str(ent) in message:
             to_station_name = str(ent).title()
-    from_station = ticket_generator.Station.get_from_name(from_station_name)
-    to_station = ticket_generator.Station.get_from_name(to_station_name)
+    ticket_request.set_from_station(ticket_generator.Station.get_from_name(from_station_name))
+    ticket_request.set_to_station(ticket_generator.Station.get_from_name(to_station_name)) 
     
     # return check here
 
@@ -98,17 +93,17 @@ def process_message(message):
         time = datetime.datetime.now()
         timesplit = times[0].split(":")
         time = time.replace(hour= int(timesplit[0]), minute= int(timesplit[1]))
+    ticket_request.set_time1(time)
 
     # get arriving
-    if not is_return and ("Arriving" in message or "arriving"):
-        arriving = True
+    if not ticket_request.get_is_return() and ("Arriving" in message or "arriving"):
+        ticket_request.set_dep_arr1(True)
 
-    print(from_station, to_station)
+    print(ticket_request.get_from_station(), ticket_request.get_to_station())
 
-    if not from_station or not to_station:
+    if not ticket_request.get_from_station() or not ticket_request.get_to_station():
         return "I need to know where you are coming from and where you want to go to."
 
-    return str(ticket_generator.get_tickets(from_station, to_station, time, arriving, is_return, return_time))
+    return str(ticket_generator.get_tickets(ticket_request.get_from_station(), ticket_request.get_to_station(), ticket_request.get_time1, ticket_request.get_dep_arr1, ticket_request.get_is_return(), ticket_request.get_time2()))
 
 
-process_message("11/21 12:01")
