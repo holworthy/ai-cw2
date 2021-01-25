@@ -5,6 +5,58 @@ import datetime
 
 nlp = spacy.load("en_core_web_lg")
 
+class Ticket_Request:
+    def __init__(self):
+        self.from_station = None
+        self.to_station = None
+        self.time1 = None
+        self.dep_arr1 = False
+        self.is_return = False
+        self.time2 = None
+        self.dep_arr2 = False
+    
+    def set_from_station(self, from_station):
+        self.from_station = from_station
+
+    def set_to_station(self, to_station):
+        self.to_station = to_station
+
+    def set_time1(self, time1):
+        self.time1 = time1
+    
+    def set_dep_arr1(self, dep_arr1):
+        self.dep_arr1 = dep_arr1
+    
+    def set_is_return(self, is_return):
+        self.is_return = is_return
+    
+    def set_time2(self, time2):
+        self.time2 = time2
+    
+    def set_dep_arr2(self, dep_arr2):
+        self.dep_arr2 = dep_arr2
+    
+    def get_from_station(self):
+        return self.from_station
+    
+    def get_to_station(self):
+        return self.to_station
+    
+    def get_time1(self):
+        return self.time1
+
+    def get_dep_arr1(self):
+        return self.dep_arr1
+    
+    def get_is_return(self):
+        return self.is_return
+    
+    def get_time2(self):
+        return self.time2
+    
+    def get_dep_arr2(self):
+        return self.dep_arr2
+
 def get_times(message):
     return [time[0] for time in re.findall("((([1-9])|([0-1][0-9])|(2[0-3])):(([0-5][0-9])))", message)]
 
