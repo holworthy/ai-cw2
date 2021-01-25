@@ -3,8 +3,11 @@
 	padding: 0;
 	box-sizing: border-box;
 	font-family: "Arial";
-	background-color: #333;
 	font-size: 1rem;
+}
+
+body {
+	background-color: #333;
 }
 
 #wrapper {
@@ -25,13 +28,18 @@
 	overflow-y: scroll;
 }
 
-#messages > * {
+.message {
 	border-radius: 1rem;
 	padding: 1rem;
 	background-color: #06f;
 	margin-bottom: 0.5rem;
 	color: #eee;
 	max-width: 75%;
+}
+
+.message a {
+	color: #eee;
+	text-decoration: underline;
 }
 
 #messages .left {
