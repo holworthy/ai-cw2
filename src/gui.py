@@ -3,6 +3,8 @@ import time
 import flask
 import nlpu
 import ticket_generator
+from ticket_generator import Station
+import re
 
 app = flask.Flask(__name__)
 
@@ -50,7 +52,24 @@ def ticket_message(ticket):
 @app.route("/message", methods = ["POST"])
 def message():
 	msg = flask.request.get_json()
+	return json.dumps(nlpu.process_message(msg))
 
-	return json.dumps([text_message(nlpu.process_message(msg))])
+@app.route("/nearest_station", methods = ["POST"])
+def nearest_station():
+	msg = flask.request.get_json()
+
+	stations = Station.get_stations()
+	stations = [station for station in stations if station.get_postcode().startswith(re.findall("^[A-Z]{1,2}", msg)[0])]
+	stations.sort(key = lambda x: int(re.findall("^[A-Z]{1,2}([0-9]{1,2})", x.get_postcode())[0]))
+
+	for station in stations:
+		if station.get_postcode() == msg:
+			return station.get_name()
+
+	for station in stations:
+		if station.get_postcode() == msg.split()[0]:
+			return station.get_name()
+
+	return stations[0].get_name()
 
 app.run()
