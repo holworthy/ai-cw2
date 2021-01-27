@@ -52,7 +52,7 @@ def ticket_message(ticket):
 @app.route("/message", methods = ["POST"])
 def message():
 	msg = flask.request.get_json()
-	return json.dumps(nlpu.process_message(msg))
+	return json.dumps(nlpu.process_message(msg, ticket_request))
 
 @app.route("/nearest_station", methods = ["POST"])
 def nearest_station():
@@ -72,4 +72,5 @@ def nearest_station():
 
 	return stations[0].get_name()
 
+ticket_request = nlpu.Ticket_Request()
 app.run()
