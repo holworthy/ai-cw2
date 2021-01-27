@@ -118,9 +118,9 @@ def process_message(message, ticket_request):
 		messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
 		state = "arrive_depart_1"
 	elif state == "arrive_depart_1":
-		if not ticket_request.get_is_return() and ("Arriving" in message or "arriving"):
+		if ("Arriving" in message or "arriving"):
 			ticket_request.set_dep_arr1(True)
-		messages.multiple_texts(["Nice!", "Is it a return?"])
+			messages.multiple_texts(["Nice!", "Is it a return?"])
 		state = "is_return"
 		
 	# doc = nlp(message)
