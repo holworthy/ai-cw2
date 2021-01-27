@@ -35,11 +35,17 @@ body {
 	margin-bottom: 0.5rem;
 	color: #eee;
 	max-width: 75%;
+	opacity: 1;
+	transition: all 1s;
 }
 
 .message a {
 	color: #eee;
 	text-decoration: underline;
+}
+
+.message.hide {
+	opacity: 0;
 }
 
 #messages .left {

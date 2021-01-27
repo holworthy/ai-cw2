@@ -2,11 +2,13 @@ var messages_div = document.getElementById("messages");
 var form = document.getElementById("form");
 var messagebox = document.getElementById("messagebox");
 
+var queue = [];
+
 function addMessage(message, side) {
-	console.log(message);
 	var message_div = document.createElement("div");
 	message_div.classList.add("message");
 	message_div.classList.add(side);
+	message_div.classList.add("hide");
 
 	if(message["type"] == "text"){
 		message_div.innerHTML = "<p>" + message["content"] + "</p>";
@@ -14,6 +16,7 @@ function addMessage(message, side) {
 
 	messages_div.append(message_div);
 	messages_div.scrollTop = messages_div.scrollHeight;
+	message_div.classList.remove("hide");
 }
 
 function textMessage(text) {
@@ -23,14 +26,33 @@ function textMessage(text) {
 	};
 }
 
+var queue = [];
+var queue_interval = null;
+function start_queue(){
+	queue_interval = setInterval(() => {
+		if(queue.length > 0){
+			addMessage(queue.shift(), "left");
+		}else{
+			clearInterval(queue_interval);
+		}
+	}, 1000);
+}
+
+queue.push(textMessage("Hi, I am trainbot! 🚂"));
+queue.push(textMessage("How can I help you?"));
+start_queue();
+
 function doWork(content) {
 	var xhr = new XMLHttpRequest();
 	xhr.open("POST", "/message");
 	xhr.setRequestHeader('Content-Type', 'application/json');
 	xhr.addEventListener("load", (e) => {
+		console.log("hi");
 		var messages = JSON.parse(xhr.responseText);
-		for(var i = 0; i < messages.length; i++)
-			addMessage(messages[i], "left");
+		for(let i = 0; i < messages.length; i++){
+			queue.push(messages[i]);
+		}
+		start_queue();
 	});
 	xhr.send(JSON.stringify(content));
 }
@@ -42,9 +64,6 @@ form.addEventListener("submit", (e) => {
 	addMessage(textMessage(content), "right");
 	messagebox.value = "";
 });
-
-addMessage(textMessage("Hi, I am trainbot!"), "left");
-addMessage(textMessage("How can I help you?"), "left");
 
 function locate() {
 	navigator.geolocation.getCurrentPosition((e) => {

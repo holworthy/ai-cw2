@@ -72,6 +72,12 @@ def get_dates(message):
 state = "start"
 ticket_request = Ticket_Request()
 
+def message_is_yes(message):
+	return message.lower() in ["yes", "yeah", "ye", "yee", "yep", "yes sir", "ok", "okay", "sure",	"sure thing", "sure thang", "yes i would", "yes please", "y"]
+
+def message_is_no(message):
+	return message.lower() in ["no", "noo", "nah", "neigh", "nope", "no sir", "no i wouldn't", "no i would not", "no thanks", "n"]
+
 def process_message(message):
 	global state
 	if state == "start":
@@ -103,8 +109,33 @@ def process_message(message):
 		to_station = Station.get_from_name(message)
 		ticket_request.set_to_station(to_station)
 		state = "when"
+		return messages.multiple_texts(["Cool!", "When would you like that ticket for?"])
 	elif state == "when":
-		pass
+		state = "is_return"
+		return messages.multiple_texts(["Lit!", "Would you like a return ticket?"])
+	elif state == "is_return":
+		if message_is_yes(message):
+			ticket_request.set_is_return(True)
+			state = "when_2"
+			return messages.multiple_texts([
+				"Okay",
+				"When would you like the return for?"
+			])
+		elif message_is_no(message):
+			ticket_request.set_is_return(False)
+			state = "end"
+			return messages.multiple_texts([
+				"Alright then.",
+				"Here is the cheapest ticket we could find",
+				"<TICKET GOES HERE>",
+			])
+		else:
+			return messages.multiple_texts([
+				"Sorry I'm not sure what you mean",
+				"When would you like the return for?"
+			])
+	elif state == "when_2":
+		pass  
 		
 	# doc = nlp(message)
 
