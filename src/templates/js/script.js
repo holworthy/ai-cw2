@@ -50,7 +50,6 @@ function doWork(content) {
 	xhr.open("POST", "/message");
 	xhr.setRequestHeader('Content-Type', 'application/json');
 	xhr.addEventListener("load", (e) => {
-		console.log("hi");
 		var messages = JSON.parse(xhr.responseText);
 		for(let i = 0; i < messages.length; i++){
 			queue.push(messages[i]);
