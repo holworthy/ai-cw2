@@ -31,7 +31,6 @@ var queue_interval = null;
 function start_queue(){
 	if(queue_interval == null){
 		queue_interval = setInterval(() => {
-			console.log("int");
 			if(queue.length > 0){
 				addMessage(queue.shift(), "left");
 			}else{

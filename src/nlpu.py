@@ -78,6 +78,17 @@ def message_is_yes(message):
 def message_is_no(message):
 	return message.lower() in ["no", "noo", "nah", "neigh", "nope", "no sir", "no i wouldn't", "no i would not", "no thanks", "n"]
 
+def ticket_from_ticket_request(ticket_request):
+	return ticket_generator.get_cheapest_ticket(
+		ticket_request.get_from_station(),
+		ticket_request.get_to_station(), 
+		ticket_request.get_time1(), 
+		ticket_request.get_dep_arr1(), 
+		ticket_request.get_is_return(), 
+		ticket_request.get_time2(), 
+		ticket_request.get_dep_arr2()
+	)
+
 def process_message(message, ticket_request):
 	global state
 	if state == "start":
@@ -140,10 +151,10 @@ def process_message(message, ticket_request):
 		elif message_is_no(message):
 			ticket_request.set_is_return(False)
 			state = "end"
-			return messages.multiple_texts([
+			return [*messages.multiple_texts([
 				"Alright then.",
 				"Here is the cheapest ticket we could find",
-			])
+			]), messages.ticket(ticket_from_ticket_request(ticket_request))]
 		else:
 			return messages.multiple_texts([
 				"Sorry I'm not sure what you mean",
@@ -168,16 +179,9 @@ def process_message(message, ticket_request):
 			ticket_request.set_dep_arr1(True)
 			
 		state = "end"
-		return messages.multiple_texts(["Nice!", "Here is your ticket: "])
+		return [*messages.multiple_texts(["Nice!", "Here is your ticket: "]), messages.ticket(ticket_from_ticket_request(ticket_request))]
 	elif state == "end":
-		shortest_ticket = ticket_generator.get_cheapest_ticket(ticket_request.get_from_station(),
-											 ticket_request.get_to_station(), 
-											 ticket_request.get_time1(), 
-											 ticket_request.get_dep_arr1(), 
-											 ticket_request.get_is_return(), 
-											 ticket_request.get_time2(), 
-											 ticket_request.get_dep_arr2())
-		return [messages.ticket(shortest_ticket)]
+		return []
 		#from_station, to_station, time_date, arriving, is_return, return_time_date, return_arriving
 	
 		
