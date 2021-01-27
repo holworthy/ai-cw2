@@ -78,7 +78,7 @@ def message_is_yes(message):
 def message_is_no(message):
 	return message.lower() in ["no", "noo", "nah", "neigh", "nope", "no sir", "no i wouldn't", "no i would not", "no thanks", "n"]
 
-def process_message(message):
+def process_message(message, ticket_request):
 	global state
 	if state == "start":
 		if message.lower() in ["hello", "hi", "hey", "sup"]:
@@ -136,6 +136,24 @@ def process_message(message):
 			])
 	elif state == "when_2":
 		pass  
+		dates = get_dates(message)
+		times = get_times(message)
+		if len(dates) > 0:
+			time = dates[0]
+			timesplit = times[0].split(":")
+			time = time.replace(hour= int(timesplit[0]), minute= int(timesplit[1]))
+		elif len(times) > 0:
+			time = datetime.datetime.now()
+			timesplit = times[0].split(":")
+			time = time.replace(hour= int(timesplit[0]), minute= int(timesplit[1]))
+		ticket_request.set_time1(time)
+		messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		state = "arrive_depart_1"
+	elif state == "arrive_depart_1":
+		if any(x in message for x in ["Arriving", "arriving", "Ariving", "ariving"]):
+			ticket_request.set_dep_arr1(True)
+			messages.multiple_texts(["Nice!", "Is it a return?"])
+			state = "is_return"
 		
 	# doc = nlp(message)
 
