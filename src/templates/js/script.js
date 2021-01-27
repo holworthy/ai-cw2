@@ -29,13 +29,17 @@ function textMessage(text) {
 var queue = [];
 var queue_interval = null;
 function start_queue(){
-	queue_interval = setInterval(() => {
-		if(queue.length > 0){
-			addMessage(queue.shift(), "left");
-		}else{
-			clearInterval(queue_interval);
-		}
-	}, 1000);
+	if(queue_interval == null){
+		queue_interval = setInterval(() => {
+			console.log("int");
+			if(queue.length > 0){
+				addMessage(queue.shift(), "left");
+			}else{
+				clearInterval(queue_interval);
+				queue_interval = null;
+			}
+		}, 1000);
+	}
 }
 
 queue.push(textMessage("Hi, I am trainbot! 🚂"));
