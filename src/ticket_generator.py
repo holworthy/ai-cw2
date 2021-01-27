@@ -157,8 +157,9 @@ def get_tickets(from_station, to_station, when = None, arriving = False, is_retu
 	return tickets
 
 
-def get_cheapest_ticket(from_station, to_station, time_date = None, arriving = False, is_return = False, return_time_date = None):
-	tickets = get_tickets(from_station, to_station, time_date, arriving, is_return, return_time_date)
+def get_cheapest_ticket(from_station, to_station, time_date = None, arriving = False, is_return = False, return_time_date = None, return_arriving = False):
+	tickets = get_tickets(from_station, to_station, time_date, arriving, is_return, return_time_date, return_arriving)
 	tickets.sort(key = lambda tickets: tickets.get_price())
 	print("Cheapest Ticket:\n")
 	print(tickets[-1])
+	return tickets[-1]

@@ -111,8 +111,24 @@ def process_message(message, ticket_request):
 		state = "when"
 		return messages.multiple_texts(["Cool!", "When would you like that ticket for?"])
 	elif state == "when":
+		dates = get_dates(message)
+		times = get_times(message)
+		if len(dates) > 0:
+			time = dates[0]
+			timesplit = times[0].split(":")
+			time = time.replace(hour= int(timesplit[0]), minute= int(timesplit[1]))
+		elif len(times) > 0:
+			time = datetime.datetime.now()
+			timesplit = times[0].split(":")
+			time = time.replace(hour= int(timesplit[0]), minute= int(timesplit[1]))
+		ticket_request.set_time1(time)
+		state = "arrive_depart_1"
+		return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+	elif state == "arrive_depart_1":
+		if any(x in message for x in ["Arriving", "arriving", "Ariving", "ariving"]):
+			ticket_request.set_dep_arr1(True)
 		state = "is_return"
-		return messages.multiple_texts(["Lit!", "Would you like a return ticket?"])
+		return messages.multiple_texts(["Nice!", "Is it a return?"])
 	elif state == "is_return":
 		if message_is_yes(message):
 			ticket_request.set_is_return(True)
@@ -127,15 +143,13 @@ def process_message(message, ticket_request):
 			return messages.multiple_texts([
 				"Alright then.",
 				"Here is the cheapest ticket we could find",
-				"<TICKET GOES HERE>",
 			])
 		else:
 			return messages.multiple_texts([
 				"Sorry I'm not sure what you mean",
 				"When would you like the return for?"
 			])
-	elif state == "when_2":
-		pass  
+	elif state == "when_2": 
 		dates = get_dates(message)
 		times = get_times(message)
 		if len(dates) > 0:
@@ -148,12 +162,24 @@ def process_message(message, ticket_request):
 			time = time.replace(hour= int(timesplit[0]), minute= int(timesplit[1]))
 		ticket_request.set_time1(time)
 		messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
-		state = "arrive_depart_1"
-	elif state == "arrive_depart_1":
+		state = "arrive_depart_2"
+	elif state == "arrive_depart_2":
 		if any(x in message for x in ["Arriving", "arriving", "Ariving", "ariving"]):
 			ticket_request.set_dep_arr1(True)
-			messages.multiple_texts(["Nice!", "Is it a return?"])
-			state = "is_return"
+			
+		state = "end"
+		return messages.multiple_texts(["Nice!", "Here is your ticket: "])
+	elif state == "end":
+		shortest_ticket = ticket_generator.get_cheapest_ticket(ticket_request.get_from_station(),
+											 ticket_request.get_to_station(), 
+											 ticket_request.get_time1(), 
+											 ticket_request.get_dep_arr1(), 
+											 ticket_request.get_is_return(), 
+											 ticket_request.get_time2(), 
+											 ticket_request.get_dep_arr2())
+		return [messages.ticket(shortest_ticket)]
+		#from_station, to_station, time_date, arriving, is_return, return_time_date, return_arriving
+	
 		
 	# doc = nlp(message)
 
@@ -193,3 +219,4 @@ def process_message(message, ticket_request):
 	# 	return "I need to know where you are coming from and where you want to go to."
 
 	# return str(ticket_generator.get_tickets(ticket_request.get_from_station(), ticket_request.get_to_station(), ticket_request.get_time1, ticket_request.get_dep_arr1, ticket_request.get_is_return(), ticket_request.get_time2()))
+	return [messages.text("um thats awkward")]
