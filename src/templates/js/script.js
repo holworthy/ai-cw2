@@ -2,8 +2,6 @@ var messages_div = document.getElementById("messages");
 var form = document.getElementById("form");
 var messagebox = document.getElementById("messagebox");
 
-var queue = [];
-
 function addMessage(message, side) {
 	var message_div = document.createElement("div");
 	message_div.classList.add("message");
@@ -12,6 +10,13 @@ function addMessage(message, side) {
 
 	if(message["type"] == "text"){
 		message_div.innerHTML = "<p>" + message["content"] + "</p>";
+	}else if(message["type"] == "ticket"){
+		let ticket = message["content"],
+			from = ticket["from_station"],
+			to = ticket["to_station"],
+			leave_at = ticket["leave_at"],
+			link = ticket["link"];
+		message_div.innerHTML = "<p><b>" + from + "</b> to <b>" + to + "</b> leaving at <b>" + leave_at + "</b></p><p><a href=\"" + link + "\">Book Here</a></p>";
 	}
 
 	messages_div.append(message_div);
