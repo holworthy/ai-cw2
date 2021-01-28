@@ -93,7 +93,7 @@ def process_message(message, ticket_request):
 	global state
 	if state == "start":
 		if message.lower() in ["hello", "hi", "hey", "sup"]:
-			return [messages.text(random.choice(["Hey there", "How can I help?", "How's it going!"]))]
+			return messages.multiple_texts(["Hey There!", "How can I help?"])
 		elif message.lower() in ["I would like a train ticket"]:
 			state = "from"
 		else:
