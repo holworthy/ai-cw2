@@ -5,8 +5,11 @@ from ticket_generator import Station, Ticket
 import datetime
 import messages
 import random
+from spellchecker import SpellChecker
 
 nlp = spacy.load("en_core_web_lg")
+spell = SpellChecker()
+spell.word_frequency.load_words(station.get_name() for station in Station.get_stations())
 
 class Ticket_Request:
 	def __init__(self):
@@ -90,6 +93,17 @@ def ticket_from_ticket_request(ticket_request):
 	)
 
 def process_message(message, ticket_request):
+	# split_message = message.split()
+	# for i in range(len(split_message)):
+	# 	misspelled = spell.unknown([split_message[i]])
+	# 	split_message[i] = spell.correction(misspelled)
+	# message = ""
+	# for word in split_message:
+	# 	message += word+" "
+	print(message)
+	message = " ".join(spell.correction(word) for word in message.split())
+	print(message)
+
 	global state
 	if state == "start":
 		if message.lower() in ["hello", "hi", "hey", "sup"]:
