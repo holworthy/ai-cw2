@@ -42,7 +42,7 @@ class Station:
 	@staticmethod
 	def get_from_name(name):
 		for station in Station.get_stations():
-			if station.get_name() == name:
+			if station.get_name().lower() == name.lower():
 				return station
 		return None
 	
