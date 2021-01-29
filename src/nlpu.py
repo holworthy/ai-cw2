@@ -73,7 +73,6 @@ def get_dates(message):
 	return dates
 
 state = "start"
-ticket_request = Ticket_Request()
 
 def message_is_yes(message):
 	return message.lower() in ["yes", "yeah", "ye", "yee", "yep", "yes sir", "ok", "okay", "sure",	"sure thing", "sure thang", "yes i would", "yes please", "y"]

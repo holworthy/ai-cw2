@@ -88,3 +88,7 @@ function locate() {
 		xhr.send();
 	});
 }
+
+var xhr = new XMLHttpRequest();
+xhr.open("POST", "/reset");
+xhr.send();

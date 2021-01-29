@@ -72,5 +72,11 @@ def nearest_station():
 
 	return stations[0].get_name()
 
+@app.route("/reset", methods = ["POST"])
+def reset():
+	ticket_request = nlpu.Ticket_Request()
+	nlpu.state = "start"
+	return ""
+
 ticket_request = nlpu.Ticket_Request()
 app.run()
