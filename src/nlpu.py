@@ -196,45 +196,5 @@ def process_message(message, ticket_request):
 		return [*messages.multiple_texts(["Nice!", "Here is your ticket: "]), messages.ticket(ticket_from_ticket_request(ticket_request))]
 	elif state == "end":
 		return []
-		#from_station, to_station, time_date, arriving, is_return, return_time_date, return_arriving
 	
-		
-	# doc = nlp(message)
-
-	# ticket_request = Ticket_Request()
-
-	# # get Stations
-	# for ent in doc.ents:
-	# 	if "from " + str(ent) in message:
-	# 		from_station_name = str(ent).title()
-	# 	elif "to " + str(ent) in message:
-	# 		to_station_name = str(ent).title()
-	# ticket_request.set_from_station(ticket_generator.Station.get_from_name(from_station_name))
-	# ticket_request.set_to_station(ticket_generator.Station.get_from_name(to_station_name)) 
-	
-	# # return check here
-
-	# # get times and dates
-	# dates = get_dates(message)
-	# times = get_times(message)
-	# if len(dates) > 0:
-	# 	time = dates[0]
-	# 	timesplit = times[0].split(":")
-	# 	time = time.replace(hour= int(timesplit[0]), minute= int(timesplit[1]))
-	# elif len(times) > 0:
-	# 	time = datetime.datetime.now()
-	# 	timesplit = times[0].split(":")
-	# 	time = time.replace(hour= int(timesplit[0]), minute= int(timesplit[1]))
-	# ticket_request.set_time1(time)
-
-	# # get arriving
-	# if not ticket_request.get_is_return() and ("Arriving" in message or "arriving"):
-	# 	ticket_request.set_dep_arr1(True)
-
-	# print(ticket_request.get_from_station(), ticket_request.get_to_station())
-
-	# if not ticket_request.get_from_station() or not ticket_request.get_to_station():
-	# 	return "I need to know where you are coming from and where you want to go to."
-
-	# return str(ticket_generator.get_tickets(ticket_request.get_from_station(), ticket_request.get_to_station(), ticket_request.get_time1, ticket_request.get_dep_arr1, ticket_request.get_is_return(), ticket_request.get_time2()))
 	return [messages.text("um thats awkward")]
