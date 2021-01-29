@@ -64,7 +64,7 @@ class Ticket_Request:
 		return self.dep_arr2
 
 def get_times(message):
-	return [time[0] for time in re.findall("((([1-9])|([0-1][0-9])|(2[0-3])):(([0-5][0-9])))", message)]
+	return [datetime.datetime.strptime(time[0], "%H:%M") for time in re.findall("((([1-9])|([0-1][0-9])|(2[0-3])):(([0-5][0-9])))", message)]
 
 def get_dates(message):
 	dates = []
@@ -146,17 +146,54 @@ def process_message(message, ticket_request):
 	elif state == "when":
 		dates = get_dates(message)
 		times = get_times(message)
-		if len(dates) > 0:
+		time = None
+		if not dates or not times:
+			if "tomorrow" in message.lower():
+				print("boo")
+				date_temp = datetime.datetime.now()
+				date_temp += datetime.timedelta(days=1)
+				date_temp = date_temp.replace(hour = 9)
+				dates.append(date_temp)
+			if "morning" in message.lower():
+				time_temp = datetime.datetime.now()
+				time_temp = time_temp.replace(hour=9, minute=0)
+				if not dates:
+					if time_temp < datetime.datetime.now():
+						time_temp += datetime.timedelta(days=1)
+					time = time_temp
+				else:
+					times.append(time_temp)
+			if "evening" in message.lower():
+				time_temp = datetime.datetime.now()
+				time_temp = time_temp.replace(hour=17, minute=0)
+				if not dates:
+					if time_temp < datetime.datetime.now():
+						time_temp += datetime.timedelta(days=1)
+					time = time_temp
+				else:
+					times.append(time_temp)
+			if "in an hour" in message.lower() or "in 1 hour" in message.lower():
+				time_temp = datetime.datetime.now()
+				time_temp += datetime.timedelta(hours=1)
+				if not dates:
+					time = time_temp
+				else:
+					times.append(time_temp)
+		if not time and dates and times:
 			time = dates[0]
-			timesplit = times[0].split(":")
-			time = time.replace(hour= int(timesplit[0]), minute= int(timesplit[1]))
-		elif len(times) > 0:
+			time = time.replace(hour=times[0].hour, minute=times[0].minute)
+		if not time and not dates and times:
 			time = datetime.datetime.now()
-			timesplit = times[0].split(":")
-			time = time.replace(hour= int(timesplit[0]), minute= int(timesplit[1]))
+			time = time.replace(hour=times[0].hour, minute=times[0].minute)
+		if not time and dates and not times:
+			time = dates[0]
+			if time.hour != 9:
+				time = time.replace(hour=9)
+		print(time)
 		ticket_request.set_time1(time)
 		state = "arrive_depart_1"
 		return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		
 	elif state == "arrive_depart_1":
 		if any(x in message for x in ["Arriving", "arriving", "Ariving", "ariving"]):
 			ticket_request.set_dep_arr1(True)
