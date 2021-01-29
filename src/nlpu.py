@@ -93,13 +93,6 @@ def ticket_from_ticket_request(ticket_request):
 	)
 
 def process_message(message, ticket_request):
-	# split_message = message.split()
-	# for i in range(len(split_message)):
-	# 	misspelled = spell.unknown([split_message[i]])
-	# 	split_message[i] = spell.correction(misspelled)
-	# message = ""
-	# for word in split_message:
-	# 	message += word+" "
 	print(message)
 	message = " ".join(spell.correction(word) for word in message.split())
 	print(message)
@@ -117,11 +110,19 @@ def process_message(message, ticket_request):
 				"Would you like to book a ticket?"
 			])
 	elif state == "would_you_like_to_book":
-		if message.lower() in ["yes", "yeah", "yep", "y", "sure", "okay"]:
+		if message_is_yes(message):
 			state = "from"
 			return messages.multiple_texts([
 				"Okay!",
 				"Where would you like to go from?"
+			])
+		elif message_is_no(message):
+			state = "start"
+			return messages.multiple_texts(["Ok, Have a nice day! 😊🚂"])
+		else:
+			return messages.multiple_texts([
+				"I'm sorry, I don't understand",
+				"Would you like to book a ticket?"
 			])
 	elif state == "from":
 		# TODO: make this predictive and add a check
