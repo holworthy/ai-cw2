@@ -100,8 +100,12 @@ def process_message(message, ticket_request):
 	if state == "start":
 		if message.lower() in ["hello", "hi", "hey", "sup"]:
 			return messages.multiple_texts(["Hey There!", "How can I help?"])
-		elif message.lower() in ["I would like a train ticket"]:
+		elif "train" in message.lower() or "ticket" in message.lower():
 			state = "from"
+			return messages.multiple_texts([
+				"Okay!",
+				"Where would you like to go from?"
+			])
 		else:
 			state = "would_you_like_to_book"
 			return messages.multiple_texts([
