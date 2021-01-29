@@ -172,11 +172,12 @@ def process_message(message, ticket_request):
 			])
 		elif message_is_no(message):
 			ticket_request.set_is_return(False)
-			state = "end"
+			state = "start"
 			return [*messages.multiple_texts([
 				"Alright then.",
 				"Here is the cheapest ticket we could find",
 			]), messages.ticket(ticket_from_ticket_request(ticket_request))]
+
 		else:
 			return messages.multiple_texts([
 				"Sorry I'm not sure what you mean",
