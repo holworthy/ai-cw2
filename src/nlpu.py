@@ -124,17 +124,21 @@ def process_message(message, ticket_request):
 				"Where would you like to go from?"
 			])
 	elif state == "from":
-		# TODO: make this predictive and add a check
 		from_station = Station.get_from_name(message)
-		ticket_request.set_from_station(from_station)
-		state = "to"
-		return messages.multiple_texts(["Nice!", "Where would you like to go to?"])
+		if from_station:
+			ticket_request.set_from_station(from_station)
+			state = "to"
+			return messages.multiple_texts(["Nice!", "Where would you like to go to?"])
+		else:
+			return messages.multiple_texts(["Sorry I'm not sure I know where that is", "Make sure you spelt that correctly and try again", "Where would you like your journey to start?"])
 	elif state == "to":
-		# TODO: make this predictive and add a check
 		to_station = Station.get_from_name(message)
-		ticket_request.set_to_station(to_station)
-		state = "when"
-		return messages.multiple_texts(["Cool!", "When would you like that ticket for?"])
+		if to_station:
+			ticket_request.set_to_station(to_station)
+			state = "when"
+			return messages.multiple_texts(["Cool!", "When would you like that ticket for?"])
+		else:
+			return messages.multiple_texts(["Sorry I'm not sure I know where that is", "Make sure you spelt that correctly and try again", "Where would you like your journey to end?"])
 	elif state == "when":
 		dates = get_dates(message)
 		times = get_times(message)
