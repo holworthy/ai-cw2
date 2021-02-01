@@ -179,23 +179,35 @@ def process_message(message, ticket_request):
 					time = time_temp
 				else:
 					times.append(time_temp)
-		if not time and dates and times:
-			time = dates[0]
-			time = time.replace(hour=times[0].hour, minute=times[0].minute)
-		if not time and not dates and times:
-			time = datetime.datetime.now()
-			time = time.replace(hour=times[0].hour, minute=times[0].minute)
-		if not time and dates and not times:
-			time = dates[0]
-			if time.hour != 9:
-				time = time.replace(hour=9)
-		print(time)
-		ticket_request.set_time1(time)
-		state = "arrive_depart_1"
+		if time or dates or time:
+			if not time and dates and times:
+				time = dates[0]
+				time = time.replace(hour=times[0].hour, minute=times[0].minute)
+			if not time and not dates and times:
+				time = datetime.datetime.now()
+				time = time.replace(hour=times[0].hour, minute=times[0].minute)
+			if not time and dates and not times:
+				time = dates[0]
+				if time.hour != 9:
+					time = time.replace(hour=9)
+			ticket_request.set_time1(time)
+			if "arrive" in message.lower() or "arriving" in message.lower():
+				ticket_request.set_dep_arr1(True)
+				state = "is_return"
+			elif "depart" in message.lower() or "departing" in message.lower():
+				ticket_request.set_dep_arr1(False)
+				state = "is_return"
+			else:
+				state = "arrive_depart_1"
+		else:
+			return messages.multiple_texts([
+				"I'm sorry I didn't understand that time.",
+				"What time would you like that train for?"
+			])
 		return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
 		
 	elif state == "arrive_depart_1":
-		if any(x in message for x in ["Arriving", "arriving", "Ariving", "ariving"]):
+		if any(x in message for x in ["Arriving", "arriving"]):
 			ticket_request.set_dep_arr1(True)
 		state = "is_return"
 		return messages.multiple_texts(["Nice!", "Is it a return?"])
