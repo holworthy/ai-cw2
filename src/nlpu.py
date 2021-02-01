@@ -271,19 +271,6 @@ def process_message(message, ticket_request):
 			else:
 				state = "arrive_depart_2"
 				return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
-		# dates = get_dates(message)
-		# times = get_times(message)
-		# if len(dates) > 0:
-		# 	time = dates[0]
-		# 	timesplit = times[0].split(":")
-		# 	time = time.replace(hour= int(timesplit[0]), minute= int(timesplit[1]))
-		# elif len(times) > 0:
-		# 	time = datetime.datetime.now()
-		# 	timesplit = times[0].split(":")
-		# 	time = time.replace(hour= int(timesplit[0]), minute= int(timesplit[1]))
-		# ticket_request.set_time1(time)
-		# messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
-		# state = "arrive_depart_2"
 	elif state == "arrive_depart_2":
 		if any(x in message for x in ["Arriving", "arriving", "Ariving", "ariving"]):
 			ticket_request.set_dep_arr1(True)
