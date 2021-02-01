@@ -1,5 +1,5 @@
 import re
-import spacy
+#import spacy
 import ticket_generator
 from ticket_generator import Station, Ticket
 import datetime
@@ -7,7 +7,7 @@ import messages
 import random
 from spellchecker import SpellChecker
 
-nlp = spacy.load("en_core_web_lg")
+#nlp = spacy.load("en_core_web_lg")
 spell = SpellChecker()
 spell.word_frequency.load_words(station.get_name() for station in Station.get_stations())
 
@@ -179,7 +179,12 @@ def process_message(message, ticket_request):
 					time = time_temp
 				else:
 					times.append(time_temp)
-		if time or dates or time:
+		if not time and not dates and not times:
+			return messages.multiple_texts([
+					"Sorry I'm not sure what you mean",
+					"When would you like the return for?"
+				])
+		else:
 			if not time and dates and times:
 				time = dates[0]
 				time = time.replace(hour=times[0].hour, minute=times[0].minute)
@@ -194,17 +199,14 @@ def process_message(message, ticket_request):
 			if "arrive" in message.lower() or "arriving" in message.lower():
 				ticket_request.set_dep_arr1(True)
 				state = "is_return"
+				return messages.multiple_texts(["Nice!", "Is it a return?"])
 			elif "depart" in message.lower() or "departing" in message.lower():
 				ticket_request.set_dep_arr1(False)
 				state = "is_return"
+				return messages.multiple_texts(["Nice!", "Is it a return?"])
 			else:
 				state = "arrive_depart_1"
-		else:
-			return messages.multiple_texts([
-				"I'm sorry I didn't understand that time.",
-				"What time would you like that train for?"
-			])
-		return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+				return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
 		
 	elif state == "arrive_depart_1":
 		if any(x in message for x in ["Arriving", "arriving"]):
@@ -226,12 +228,6 @@ def process_message(message, ticket_request):
 				"Alright then.",
 				"Here is the cheapest ticket we could find",
 			]), messages.ticket(ticket_from_ticket_request(ticket_request))]
-
-		else:
-			return messages.multiple_texts([
-				"Sorry I'm not sure what you mean",
-				"When would you like the return for?"
-			])
 	elif state == "when_2": 
 		dates = get_dates(message)
 		times = get_times(message)
