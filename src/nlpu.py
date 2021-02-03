@@ -149,6 +149,12 @@ def process_message(message, ticket_request):
 				"Okay!",
 				"Where would you like to go from?"
 			])
+		elif "delay" in message.lower() or "late" in message.lower() or "behind" in message.lower() or "where is my train" in message.lower():
+			state = "delay"
+			return messages.multiple_texts([
+				"Ok I just need some details to locate your train and predict the delay.",
+				"What station are you going to?"
+			])
 		else:
 			state = "would_you_like_to_book"
 			return messages.multiple_texts([
@@ -277,6 +283,30 @@ def process_message(message, ticket_request):
 			
 		state = "end"
 		return [*messages.multiple_texts(["Nice!", "Here is your ticket: "]), messages.ticket(ticket_from_ticket_request(ticket_request))]
+	elif state == "delay":
+		delay_to_station = Station.get_from_name(message)
+		if delay_to_station:
+			state = "delay_2"
+			return messages.multiple_texts(["Got it.", "And where are you currently?"])
+		else:
+			return messages.multiple_texts([
+				"Sorry I'm not sure I know where that is",
+				"Make sure you spelt that correctly and try again", 
+				"Where would you like your journey to end?"])
+	elif state == "delay_2":
+		delay_from_station = Station.get_from_name(message)
+		if delay_from_station:
+			state = "start"
+			# delay call
+			return messages.multiple_texts([
+				"Got it.",
+				"DELAY MESSAGE",
+				"Anything else I can help with?"])
+		else:
+			return messages.multiple_texts([
+				"Sorry I'm not sure I know where that is",
+				"Make sure you spelt that correctly and try again", 
+				"Where would you like your journey to end?"])
 	elif state == "end":
 		return []
 	
