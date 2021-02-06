@@ -26,6 +26,9 @@ class Station:
 	def __repr__(self):
 		return str(self)
 
+	def __eq__(self, other):
+		return self.get_name() == other.get_name()
+
 	@staticmethod
 	def get_stations():
 		with open("data/stations.json", "r") as f:
