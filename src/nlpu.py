@@ -196,24 +196,30 @@ def process_message(message, ticket_request):
 		else:
 			return messages.multiple_texts(["Sorry I'm not sure I know where that is", "Make sure you spelt that correctly and try again", "Where would you like your journey to end?"])
 	elif state == "when":
-		time, dates, times = process_times_dates(message, ticket_request)
+		time, times, dates = process_times_dates(message, ticket_request)
 		if not time and not dates and not times:
 			return messages.multiple_texts([
 					"Sorry I'm not sure what you mean",
 					"When would you like that ticket for?"
 				])
 		else:
+			date_only = False
 			if not time and dates and times:
+				print("boo 1")
 				time = dates[0]
 				time = time.replace(hour=times[0].hour, minute=times[0].minute)
-			if not time and not dates and times:
+			elif not time and not dates and times:
+				print("boo 2")
 				time = datetime.datetime.now()
 				time = time.replace(hour=times[0].hour, minute=times[0].minute)
-			if not time and dates and not times:
+			elif not time and dates and not times:
+				print("boo 3")
 				time = dates[0]
 				if time.hour != 9:
 					time = time.replace(hour=9)
+					date_only = True
 			ticket_request.set_time1(time)
+			print(time)
 			if "arrive" in message.lower() or "arriving" in message.lower():
 				ticket_request.set_dep_arr1(True)
 				state = "is_return"
@@ -239,6 +245,12 @@ def process_message(message, ticket_request):
 					"In the evening at 5pm?",
 					"Or another time?"
 				]) 
+			elif date_only:
+				state = "date_check_1"
+				return messages.multiple_texts([
+					"On "+ticket_request.get_time1().strftime("%A %d/%m/%y")+" at 9am?",
+					"Or another time?"
+				])
 			else:
 				state = "arrive_depart_1"
 				return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
@@ -290,6 +302,22 @@ def process_message(message, ticket_request):
 					"Sorry I'm not sure what you mean",
 					"When would you like that ticket for?"
 				])
+	elif state == "date_check_1":
+		if message_is_yes(message):
+			state = "arrive_depart_1"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif get_times(message) != None:
+			ticket_request.set_time1(get_times(message)[0])
+			state = "arrive_depart_1"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif message_is_no(message):
+			return messages.multiple_texts(["Okay!",
+			"Whats the new time?"])
+		else:
+			return messages.multiple_texts([
+					"Sorry I'm not sure what you mean",
+					"When would you like that ticket for?"
+				])
 	elif state == "arrive_depart_1":
 		if any(x in message for x in ["Arriving", "arriving"]):
 			ticket_request.set_dep_arr1(True)
@@ -306,10 +334,16 @@ def process_message(message, ticket_request):
 		elif message_is_no(message):
 			ticket_request.set_is_return(False)
 			state = "start"
-			return [*messages.multiple_texts([
-				"Alright then.",
-				"Here is the cheapest ticket we could find",
-			]), messages.ticket(ticket_from_ticket_request(ticket_request))]
+			try:
+				return [*messages.multiple_texts([
+					"Alright then.",
+					"Here is the cheapest ticket we could find",
+				]), messages.ticket(ticket_from_ticket_request(ticket_request))]
+			except:
+				return [*messages.multiple_texts([
+					"There are no tickets at that time.",
+					"Anything else I can help?"
+					])]
 		else:
 			messages.multiple_texts([
 				"I'm sorry I don't understand.",
@@ -323,6 +357,7 @@ def process_message(message, ticket_request):
 					"When would you like the return for?"
 				])
 		else:
+			date_only = False
 			if not time and dates and times:
 				time = dates[0]
 				time = time.replace(hour=times[0].hour, minute=times[0].minute)
@@ -333,6 +368,7 @@ def process_message(message, ticket_request):
 				time = dates[0]
 				if time.hour != 9:
 					time = time.replace(hour=9)
+					date_only = True
 			ticket_request.set_time1(time)
 			if "arrive" in message.lower() or "arriving" in message.lower():
 				ticket_request.set_dep_arr1(True)
@@ -363,6 +399,12 @@ def process_message(message, ticket_request):
 				state = "next_day_check"
 				return messages.multiple_texts([
 					"The nexy day at 9am?",
+					"Or another time?"
+				])
+			elif date_only:
+				state = "date_check_2"
+				return messages.multiple_texts([
+					"On "+ticket_request.get_time2().strftime("%A %d/%m/%y")+" at 9am?",
 					"Or another time?"
 				])
 			else:
@@ -432,12 +474,37 @@ def process_message(message, ticket_request):
 					"Sorry I'm not sure what you mean",
 					"When would you like that ticket for?"
 				])
+	elif state == "date_check_2":
+		if message_is_yes(message):
+			state = "arrive_depart_2"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif get_times(message) != None:
+			ticket_request.set_time1(get_times(message)[0])
+			state = "arrive_depart_2"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif message_is_no(message):
+			return messages.multiple_texts(["Okay!",
+			"Whats the new time?"])
+		else:
+			return messages.multiple_texts([
+					"Sorry I'm not sure what you mean",
+					"When would you like that ticket for?"
+				])
 	elif state == "arrive_depart_2":
 		if any(x in message for x in ["Arriving", "arriving", "Ariving", "ariving"]):
 			ticket_request.set_dep_arr1(True)
 			
 		state = "end"
-		return [*messages.multiple_texts(["Nice!", "Here is your ticket: "]), messages.ticket(ticket_from_ticket_request(ticket_request))]
+		try:
+			return [*messages.multiple_texts([
+				"Alright then.",
+				"Here is the cheapest tickets we could find",
+			]), messages.ticket(ticket_from_ticket_request(ticket_request))]
+		except:
+			return [*messages.multiple_texts([
+				"There are no tickets at those times.",
+				"Anything else I can help?"
+				])]
 	elif state == "delay":
 		delay_to_station = Station.get_from_name(message)
 		if delay_to_station:
