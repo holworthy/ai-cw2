@@ -222,9 +222,74 @@ def process_message(message, ticket_request):
 				ticket_request.set_dep_arr1(False)
 				state = "is_return"
 				return messages.multiple_texts(["Nice!", "Is it a return?"])
+			elif "tomorrow" in message.lower():
+				state = "tomorrow_check_1"
+				return messages.multiple_texts([
+					"Tomorrow at 9am, or another time?"
+				])
+			elif "morning" in message.lower():
+				state = "morning_check_1"
+				return messages.multiple_texts([
+					"In the morning at 9am?",
+					"Or another time?"
+				])
+			elif "evening" in message.lower():
+				state = "evening_check_1"
+				return messages.multiple_texts([
+					"In the evening at 5pm?",
+					"Or another time?"
+				]) 
 			else:
 				state = "arrive_depart_1"
 				return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+	elif state == "tomorrow_check_1":
+		if message_is_yes(message):
+			state = "arrive_depart_1"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif get_times(message) != None:
+			ticket_request.set_time1(get_times(message)[0])
+			state = "arrive_depart_1"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif message_is_no(message):
+			return messages.multiple_texts(["Okay!",
+			"Whats the new time?"])
+		else:
+			return messages.multiple_texts([
+					"Sorry I'm not sure what you mean",
+					"When would you like that ticket for?"
+				])
+	elif state == "morning_check_1":
+		if message_is_yes(message):
+			state = "arrive_depart_1"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif get_times(message) != None:
+			ticket_request.set_time1(get_times(message)[0])
+			state = "arrive_depart_1"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif message_is_no(message):
+			return messages.multiple_texts(["Okay!",
+			"Whats the new time?"])
+		else:
+			return messages.multiple_texts([
+					"Sorry I'm not sure what you mean",
+					"When would you like that ticket for?"
+				])
+	elif state == "evening_check_1":
+		if message_is_yes(message):
+			state = "arrive_depart_1"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif get_times(message) != None:
+			ticket_request.set_time1(get_times(message)[0])
+			state = "arrive_depart_1"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif message_is_no(message):
+			return messages.multiple_texts(["Okay!",
+			"Whats the new time?"])
+		else:
+			return messages.multiple_texts([
+					"Sorry I'm not sure what you mean",
+					"When would you like that ticket for?"
+				])
 	elif state == "arrive_depart_1":
 		if any(x in message for x in ["Arriving", "arriving"]):
 			ticket_request.set_dep_arr1(True)
@@ -277,9 +342,96 @@ def process_message(message, ticket_request):
 				ticket_request.set_dep_arr1(False)
 				state = "end"
 				return messages.multiple_texts(["Nice!", "Is it a return?"])
+			elif "tomorrow" in message.lower():
+				state = "tomorrow_check_2"
+				return messages.multiple_texts([
+					"Tomorrow at 9am, or another time?"
+				])
+			elif "morning" in message.lower():
+				state = "morning_check_2"
+				return messages.multiple_texts([
+					"In the morning at 9am?",
+					"Or another time?"
+				])
+			elif "evening" in message.lower():
+				state = "evening_check_2"
+				return messages.multiple_texts([
+					"In the evening at 5pm?",
+					"Or another time?"
+				])
+			elif "next day" in message.lower():
+				state = "next_day_check"
+				return messages.multiple_texts([
+					"The nexy day at 9am?",
+					"Or another time?"
+				])
 			else:
 				state = "arrive_depart_2"
 				return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+	elif state == "tomorrow_check_2":
+		if message_is_yes(message):
+			state = "arrive_depart_2"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif get_times(message) != None:
+			ticket_request.set_time1(get_times(message)[0])
+			state = "arrive_depart_2"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif message_is_no(message):
+			return messages.multiple_texts(["Okay!",
+			"Whats the new time?"])
+		else:
+			return messages.multiple_texts([
+					"Sorry I'm not sure what you mean",
+					"When would you like that ticket for?"
+				])
+	elif state == "morning_check_2":
+		if message_is_yes(message):
+			state = "arrive_depart_2"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif get_times(message) != None:
+			ticket_request.set_time1(get_times(message)[0])
+			state = "arrive_depart_2"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif message_is_no(message):
+			return messages.multiple_texts(["Okay!",
+			"Whats the new time?"])
+		else:
+			return messages.multiple_texts([
+					"Sorry I'm not sure what you mean",
+					"When would you like that ticket for?"
+				])
+	elif state == "evening_check_2":
+		if message_is_yes(message):
+			state = "arrive_depart_2"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif get_times(message) != None:
+			ticket_request.set_time1(get_times(message)[0])
+			state = "arrive_depart_2"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif message_is_no(message):
+			return messages.multiple_texts(["Okay!",
+			"Whats the new time?"])
+		else:
+			return messages.multiple_texts([
+					"Sorry I'm not sure what you mean",
+					"When would you like that ticket for?"
+				])
+	elif state == "next_day_check":
+		if message_is_yes(message):
+			state = "arrive_depart_2"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif get_times(message) != None:
+			ticket_request.set_time1(get_times(message)[0])
+			state = "arrive_depart_2"
+			return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+		elif message_is_no(message):
+			return messages.multiple_texts(["Okay!",
+			"Whats the new time?"])
+		else:
+			return messages.multiple_texts([
+					"Sorry I'm not sure what you mean",
+					"When would you like that ticket for?"
+				])
 	elif state == "arrive_depart_2":
 		if any(x in message for x in ["Arriving", "arriving", "Ariving", "ariving"]):
 			ticket_request.set_dep_arr1(True)
