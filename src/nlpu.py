@@ -134,6 +134,9 @@ def ticket_from_ticket_request(ticket_request):
 		ticket_request.get_dep_arr2()
 	)
 
+def get_current_state():
+	return state
+
 def process_message(message, ticket_request):
 	print(message)
 	message = " ".join(spell.correction(word) for word in message.split())
