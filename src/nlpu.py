@@ -200,7 +200,7 @@ def process_message(message, ticket_request):
 		if not time and not dates and not times:
 			return messages.multiple_texts([
 					"Sorry I'm not sure what you mean",
-					"When would you like the return for?"
+					"When would you like that ticket for?"
 				])
 		else:
 			if not time and dates and times:
