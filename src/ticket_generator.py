@@ -164,5 +164,8 @@ def get_cheapest_ticket(from_station, to_station, time_date = None, arriving = F
 	tickets = get_tickets(from_station, to_station, time_date, arriving, is_return, return_time_date, return_arriving)
 	tickets.sort(key = lambda tickets: tickets.get_price(), reverse=True)
 	print("Cheapest Ticket:\n")
-	print(tickets[-1])
+	try:
+		print(tickets[0])
+	except:
+		pass
 	return tickets[0]
