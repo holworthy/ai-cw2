@@ -154,11 +154,11 @@ def better_datetime_processing(message):
 				has_date_part = False
 
 	if "morning" in message:
-		dt = dt.replace(hour = 9, minutes = 0)
+		dt = dt.replace(hour = 9, minute = 0)
 	elif "afternoon" in message or "after lunch" in message:
-		dt = dt.replace(hour = 14, minutes = 0)
+		dt = dt.replace(hour = 14, minute = 0)
 	elif "lunchtime" in message or "midday" in message:
-		dt = dt.replace(hour = 12, minutes = 0)
+		dt = dt.replace(hour = 12, minute = 0)
 	else:
 		match = re.match("[0-9]{2}:[0-9]{2}", message)
 		if match:
@@ -182,6 +182,9 @@ def better_datetime_processing(message):
 					dt = dt.replace(hour = 12, minute = 0, second = 0)
 				else:
 					has_time_part = False
+	
+	if not has_date_part and not has_time_part:
+		return None
 
 	if not has_time_part:
 		dt = dt.replace(hour = 9, minute = 0, second = 0)
@@ -276,60 +279,68 @@ def process_message(message, ticket_request):
 		else:
 			return messages.multiple_texts(["Sorry I'm not sure I know where that is", "Make sure you spelt that correctly and try again", "Where would you like your journey to end?"])
 	elif state == "when":
-		time, times, dates = process_times_dates(message, ticket_request)
-		if not time and not dates and not times:
-			return messages.multiple_texts([
-					"Sorry I'm not sure what you mean",
-					"When would you like that ticket for?"
-				])
+		dt = better_datetime_processing(message)
+		if not dt:
+			return messages.multiple_texts(["Sorry I'm not sure what you mean", "When do you want the ticket for?"])
 		else:
-			date_only = False
-			if not time and dates and times:
-				time = dates[0]
-				time = time.replace(hour=times[0].hour, minute=times[0].minute)
-			elif not time and not dates and times:
-				time = datetime.datetime.now()
-				time = time.replace(hour=times[0].hour, minute=times[0].minute)
-			elif not time and dates and not times:
-				time = dates[0]
-				if time.hour != 9:
-					time = time.replace(hour=9)
-					date_only = True
-			ticket_request.set_time1(time)
-			if "arrive" in message.lower() or "arriving" in message.lower():
-				ticket_request.set_dep_arr1(True)
-				state = "is_return"
-				return messages.multiple_texts(["Nice!", "Is it a return?"])
-			elif "depart" in message.lower() or "departing" in message.lower():
-				ticket_request.set_dep_arr1(False)
-				state = "is_return"
-				return messages.multiple_texts(["Nice!", "Is it a return?"])
-			elif "tomorrow" in message.lower():
-				state = "tomorrow_check_1"
-				return messages.multiple_texts([
-					"Tomorrow at 9am, or another time?"
-				])
-			elif "morning" in message.lower():
-				state = "morning_check_1"
-				return messages.multiple_texts([
-					"In the morning at 9am?",
-					"Or another time?"
-				])
-			elif "evening" in message.lower():
-				state = "evening_check_1"
-				return messages.multiple_texts([
-					"In the evening at 5pm?",
-					"Or another time?"
-				]) 
-			elif date_only:
-				state = "date_check_1"
-				return messages.multiple_texts([
-					"On "+ticket_request.get_time1().strftime("%A %d/%m/%y")+" at 9am?",
-					"Or another time?"
-				])
-			else:
-				state = "arrive_depart_1"
-				return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
+			ticket_request.set_time1(dt)
+			state = "arrive_depart_1"
+			return messages.multiple_texts(["Awesome!", "Is that arriving or departing?"])
+
+		# time, times, dates = process_times_dates(message, ticket_request)
+		# if not time and not dates and not times:
+		# 	return messages.multiple_texts([
+		# 			"Sorry I'm not sure what you mean",
+		# 			"When would you like that ticket for?"
+		# 		])
+		# else:
+		# 	date_only = False
+		# 	if not time and dates and times:
+		# 		time = dates[0]
+		# 		time = time.replace(hour=times[0].hour, minute=times[0].minute)
+		# 	elif not time and not dates and times:
+		# 		time = datetime.datetime.now()
+		# 		time = time.replace(hour=times[0].hour, minute=times[0].minute)
+		# 	elif not time and dates and not times:
+		# 		time = dates[0]
+		# 		if time.hour != 9:
+		# 			time = time.replace(hour=9)
+		# 			date_only = True
+		# 	ticket_request.set_time1(time)
+		# 	if "arrive" in message.lower() or "arriving" in message.lower():
+		# 		ticket_request.set_dep_arr1(True)
+		# 		state = "is_return"
+		# 		return messages.multiple_texts(["Nice!", "Is it a return?"])
+		# 	elif "depart" in message.lower() or "departing" in message.lower():
+		# 		ticket_request.set_dep_arr1(False)
+		# 		state = "is_return"
+		# 		return messages.multiple_texts(["Nice!", "Is it a return?"])
+		# 	elif "tomorrow" in message.lower():
+		# 		state = "tomorrow_check_1"
+		# 		return messages.multiple_texts([
+		# 			"Tomorrow at 9am, or another time?"
+		# 		])
+		# 	elif "morning" in message.lower():
+		# 		state = "morning_check_1"
+		# 		return messages.multiple_texts([
+		# 			"In the morning at 9am?",
+		# 			"Or another time?"
+		# 		])
+		# 	elif "evening" in message.lower():
+		# 		state = "evening_check_1"
+		# 		return messages.multiple_texts([
+		# 			"In the evening at 5pm?",
+		# 			"Or another time?"
+		# 		]) 
+		# 	elif date_only:
+		# 		state = "date_check_1"
+		# 		return messages.multiple_texts([
+		# 			"On "+ticket_request.get_time1().strftime("%A %d/%m/%y")+" at 9am?",
+		# 			"Or another time?"
+		# 		])
+		# 	else:
+		# 		state = "arrive_depart_1"
+		# 		return messages.multiple_texts(["Nice!", "Is that arriving or departing?"])
 	elif state == "tomorrow_check_1":
 		if message_is_yes(message):
 			state = "arrive_depart_1"
