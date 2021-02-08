@@ -1,13 +1,12 @@
+import datetime
+import random
 import re
-#import spacy
+from spellchecker import SpellChecker
+import knn
+import messages
 import ticket_generator
 from ticket_generator import Station, Ticket
-import datetime
-import messages
-import random
-from spellchecker import SpellChecker
 
-#nlp = spacy.load("en_core_web_lg")
 spell = SpellChecker()
 spell.word_frequency.load_words(station.get_name() for station in Station.get_stations())
 
@@ -220,11 +219,11 @@ def ticket_from_ticket_request(ticket_request):
 def get_current_state():
 	return state
 
-def process_message(message, ticket_request):
-	#print(message)
-	message = " ".join(spell.correction(word) for word in message.split())
-	#print(message)
+delay_to_station = None
 
+def process_message(message, ticket_request):
+	message = " ".join(spell.correction(word) for word in message.split())
+	global delay_to_station
 	global state
 	if state == "start":
 		if message.lower() in ["hello", "hi", "hey", "sup"]:
@@ -350,15 +349,18 @@ def process_message(message, ticket_request):
 			return messages.multiple_texts([
 				"Sorry I'm not sure I know where that is",
 				"Make sure you spelt that correctly and try again", 
-				"Where would you like your journey to end?"])
+				"Where would you like your journey to end?"
+			])
 	elif state == "delay_2":
 		delay_from_station = Station.get_from_name(message)
 		if delay_from_station:
 			state = "start"
-			# delay call
+			now = datetime.datetime.now()
+			delay = knn.knn.predict([[now.year, now.month, now.day, knn.station_code_to_number(delay_from_station.get_code()), now.hour, now.minute, now.hour, now.minute, knn.station_code_to_number(delay_to_station.get_code())]])
 			return messages.multiple_texts([
 				"Got it.",
-				"DELAY MESSAGE",
+				f"Your train will probably be around {int(delay[0])} minutes late",
+				"So it should arrive at " + (datetime.datetime.now() + datetime.timedelta(minutes = int(delay[0]))).strftime("%H:%m"),
 				"Anything else I can help with?"])
 		else:
 			return messages.multiple_texts([

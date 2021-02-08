@@ -28,17 +28,17 @@ for services_id, services_origin_location, services_destination_location, servic
 		if delay > 3:
 			train_data.append([
 				*map(int, services_date_of_service.split("-")),
-				int(services_rid),
+				# int(services_rid),
 				station_code_to_number(locations_location),
 				*time_string_to_hour_minute(locations_gbtt_pta),
-				*time_string_to_hour_minute(locations_actual_ta)
+				*time_string_to_hour_minute(locations_actual_ta),
+				station_code_to_number(services_destination_location)
 			])
-			print(train_data[-1], delay)
+			# print(train_data[-1], delay)
 
 			target_data.append(delay)
 
 knn.fit(train_data, target_data)
-# print(knn.predict())
 	
 cur.close()
 db.close()
