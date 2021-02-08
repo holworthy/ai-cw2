@@ -138,9 +138,9 @@ def get_current_state():
 	return state
 
 def process_message(message, ticket_request):
-	print(message)
+	#print(message)
 	message = " ".join(spell.correction(word) for word in message.split())
-	print(message)
+	#print(message)
 
 	global state
 	if state == "start":
@@ -205,21 +205,17 @@ def process_message(message, ticket_request):
 		else:
 			date_only = False
 			if not time and dates and times:
-				print("boo 1")
 				time = dates[0]
 				time = time.replace(hour=times[0].hour, minute=times[0].minute)
 			elif not time and not dates and times:
-				print("boo 2")
 				time = datetime.datetime.now()
 				time = time.replace(hour=times[0].hour, minute=times[0].minute)
 			elif not time and dates and not times:
-				print("boo 3")
 				time = dates[0]
 				if time.hour != 9:
 					time = time.replace(hour=9)
 					date_only = True
 			ticket_request.set_time1(time)
-			print(time)
 			if "arrive" in message.lower() or "arriving" in message.lower():
 				ticket_request.set_dep_arr1(True)
 				state = "is_return"
@@ -325,6 +321,8 @@ def process_message(message, ticket_request):
 		return messages.multiple_texts(["Nice!", "Is it a return?"])
 	elif state == "is_return":
 		if message_is_yes(message):
+			print("test 1")
+			print(state)
 			ticket_request.set_is_return(True)
 			state = "when_2"
 			return messages.multiple_texts([
@@ -345,7 +343,7 @@ def process_message(message, ticket_request):
 					"Anything else I can help?"
 					])]
 		else:
-			messages.multiple_texts([
+			return messages.multiple_texts([
 				"I'm sorry I don't understand.",
 				"Is that a return? yes or no?"
 			])
@@ -531,5 +529,5 @@ def process_message(message, ticket_request):
 				"Where would you like your journey to end?"])
 	elif state == "end":
 		return []
-	
+	print("state: "+ state)
 	return [messages.text("um thats awkward")]
