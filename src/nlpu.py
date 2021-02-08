@@ -15,7 +15,7 @@ class Ticket_Request:
 	def __init__(self):
 		self.from_station = None
 		self.to_station = None
-		self.time1 = datetime.datetime.now()
+		self.time1 = None
 		self.dep_arr1 = False
 		self.is_return = False
 		self.time2 = None
@@ -115,6 +115,79 @@ def process_times_dates(message, ticket_request):
 			dates.append(date_temp)
 	return time, times, dates
 
+def better_datetime_processing(message):
+	dt = datetime.datetime.now()
+	now = datetime.datetime.now()
+	today = datetime.datetime(year = now.year, month = now.month, day = now.day)
+
+	has_date_part = True
+	has_time_part = True
+
+	if "today" in message:
+		dt = today
+	elif "tomorrow" in message:
+		dt = today + datetime.timedelta(days = 1)
+	elif "in a week" in message or "a week today" in message:
+		dt = today + datetime.timedelta(weeks = 1)
+	elif "in a month" in message or "a month today" in message:
+		dt = today + datetime.timedelta(months = 1)
+	else:
+		for i, day in enumerate(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]):
+			if day in message.lower():
+				days_ahead = i - dt.weekday()
+				if days_ahead <= 0:
+					days_ahead += 7
+				dt = dt + datetime.timedelta(days_ahead)
+				break
+		else:
+			match = re.match("([0-9]{2}/[0-9]{2}/[0-9]{4})|([0-9]{4}-[0-9]{2}-[0-9]{2})", message)
+			if match:
+				for pattern in ["%d/%m/%Y", "%Y-%m-%d"]:
+					try:
+						dt = datetime.datetime.strptime(match.group(0), pattern)
+					except Exception as e:
+						continue
+					break
+				else:
+					raise ValueError("Invalid date")
+			else:
+				has_date_part = False
+
+	if "morning" in message:
+		dt = dt.replace(hour = 9, minutes = 0)
+	elif "afternoon" in message or "after lunch" in message:
+		dt = dt.replace(hour = 14, minutes = 0)
+	elif "lunchtime" in message or "midday" in message:
+		dt = dt.replace(hour = 12, minutes = 0)
+	else:
+		match = re.match("[0-9]{2}:[0-9]{2}", message)
+		if match:
+			try:
+				t = datetime.time.fromisoformat(match.group(0))
+				dt = dt.replace(hour = t.hour, minute = t.minute, second = 0)
+			except Exception as e:
+				raise ValueError("Invalid time")
+		else:
+			for i in range(1, 12):
+				if f"{i} am" in message or f"{i}am" in message:
+					dt = dt.replace(hour = i, minute = 0, second = 0)
+					break
+				elif f"{i} pm" in message or f"{i}pm" in message:
+					dt = dt.replace(hour = i + 12, minute = 0, second = 0)
+					break
+			else:
+				if f"12 am" in message or f"12am" in message:
+					dt = dt.replace(hour = 0, minute = 0, second = 0)
+				elif f"12 pm" in message or f"12pm" in message:
+					dt = dt.replace(hour = 12, minute = 0, second = 0)
+				else:
+					has_time_part = False
+
+	if not has_time_part:
+		dt = dt.replace(hour = 9, minute = 0, second = 0)
+	
+	return dt
+
 state = "start"
 
 def message_is_yes(message):
@@ -124,6 +197,13 @@ def message_is_no(message):
 	return message.lower() in ["no", "noo", "nah", "neigh", "nope", "no sir", "no i wouldn't", "no i would not", "no thanks", "n"]
 
 def ticket_from_ticket_request(ticket_request):
+	print(ticket_request.get_from_station(),
+		ticket_request.get_to_station(), 
+		ticket_request.get_time1(), 
+		ticket_request.get_dep_arr1(), 
+		ticket_request.get_is_return(), 
+		ticket_request.get_time2(), 
+		ticket_request.get_dep_arr2())
 	return ticket_generator.get_cheapest_ticket(
 		ticket_request.get_from_station(),
 		ticket_request.get_to_station(), 
@@ -527,7 +607,5 @@ def process_message(message, ticket_request):
 				"Sorry I'm not sure I know where that is",
 				"Make sure you spelt that correctly and try again", 
 				"Where would you like your journey to end?"])
-	elif state == "end":
-		return []
-	print("state: "+ state)
+	
 	return [messages.text("um thats awkward")]
