@@ -19,6 +19,10 @@ class Ticket_Request:
 		self.is_return = False
 		self.time2 = None
 		self.dep_arr2 = False
+
+		self.delay_from_station = None
+		self.delay_to_station = None
+		self.delay_current_station = Station.get_from_name("Ipswich")
 	
 	def set_from_station(self, from_station):
 		self.from_station = from_station
@@ -219,11 +223,8 @@ def ticket_from_ticket_request(ticket_request):
 def get_current_state():
 	return state
 
-delay_to_station = None
-
 def process_message(message, ticket_request):
 	message = " ".join(spell.correction(word) for word in message.split())
-	global delay_to_station
 	global state
 	if state == "start":
 		if message.lower() in ["hello", "hi", "hey", "sup"]:
@@ -238,7 +239,7 @@ def process_message(message, ticket_request):
 			state = "delay"
 			return messages.multiple_texts([
 				"Ok I just need some details to locate your train and predict the delay.",
-				"What station are you going to?"
+				"What was the first station on the journey?"
 			])
 		else:
 			state = "would_you_like_to_book"
@@ -341,10 +342,10 @@ def process_message(message, ticket_request):
 				"Anything else I can help?"
 				])]
 	elif state == "delay":
-		delay_to_station = Station.get_from_name(message)
-		if delay_to_station:
+		ticket_request.delay_to_station = Station.get_from_name(message)
+		if ticket_request.delay_to_station:
 			state = "delay_2"
-			return messages.multiple_texts(["Got it.", "And where are you currently?"])
+			return messages.multiple_texts(["Got it.", "And where is the last station in the journey?"])
 		else:
 			return messages.multiple_texts([
 				"Sorry I'm not sure I know where that is",
@@ -352,15 +353,20 @@ def process_message(message, ticket_request):
 				"Where would you like your journey to end?"
 			])
 	elif state == "delay_2":
-		delay_from_station = Station.get_from_name(message)
-		if delay_from_station:
+		ticket_request.delay_from_station = Station.get_from_name(message)
+		if ticket_request.delay_from_station:
 			state = "start"
 			now = datetime.datetime.now()
-			delay = knn.knn.predict([[now.year, now.month, now.day, knn.station_code_to_number(delay_from_station.get_code()), now.hour, now.minute, now.hour, now.minute, knn.station_code_to_number(delay_to_station.get_code())]])
+			now_plus_delay = now + datetime.timedelta(minutes = 10)
+			delay = knn.predict_it(
+				[now.year, now.month, now.day, knn.station_code_to_number(ticket_request.delay_from_station.get_code()), knn.station_code_to_number(ticket_request.delay_to_station.get_code()), knn.station_code_to_number(ticket_request.delay_current_station.get_code()), now.hour, now.minute, now_plus_delay.hour, now_plus_delay.minute],
+				ticket_request.delay_from_station,
+				ticket_request.delay_to_station
+			)
 			return messages.multiple_texts([
 				"Got it.",
-				f"Your train will probably be around {int(delay[0])} minutes late",
-				"So it should arrive at " + (datetime.datetime.now() + datetime.timedelta(minutes = int(delay[0]))).strftime("%H:%m"),
+				f"Based on previous data, your train will probably arrive at its final destination {int(delay[0])} minutes late",
+				"So it should arrive at " + (datetime.datetime.now() + datetime.timedelta(minutes = int(delay[0]))).strftime("%H:%M"),
 				"Anything else I can help with?"])
 		else:
 			return messages.multiple_texts([
