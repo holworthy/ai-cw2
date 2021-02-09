@@ -13,9 +13,7 @@ cur = db.cursor()
 result = cur.execute("SELECT services.id, services.origin_location, services.destination_location, services.gbtt_ptd, services.gbtt_pta, services.toc_code, services.date_of_service, services.rid, locations.location, locations.gbtt_ptd, locations.gbtt_pta, locations.actual_td, locations.actual_ta, locations.late_canc_reason FROM services INNER JOIN locations ON services.id = locations.service_id")
 rows = [row for row in result]
 
-def predict_it(row1, from_station, to_station):
-	print("up here", row1)
-	
+def predict_it(row1, from_station, to_station):	
 	knnc = sklearn.neighbors.KNeighborsClassifier()
 
 	train_data = []
@@ -27,7 +25,6 @@ def predict_it(row1, from_station, to_station):
 		# if services_origin_location != from_station.get_code() or services_destination_location != to_station.get_code():
 		# 	continue
 		
-		print(services_id)
 		if cur_service_id != services_id:
 			for i in range(len(train_data) - len(target_data)):
 				target_data.append(total_delay)
@@ -56,13 +53,9 @@ def predict_it(row1, from_station, to_station):
 	for i in range(len(train_data) - len(target_data)):
 		target_data.append(total_delay)
 
-	print(train_data, target_data)
-	print("down here", row1)
-
 	knnc.fit(train_data, target_data)
 	
 	try:
-		print("hi")
 		return knnc.predict([row1])
 	except:
 		return 0
