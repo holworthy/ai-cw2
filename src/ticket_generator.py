@@ -134,6 +134,7 @@ def get_tickets(from_station, to_station, when = None, arriving = False, is_retu
 	mtx_rows = soup.select("#oft .mtx")
 
 	tickets = []
+	returns = []
 	for mtx_row in mtx_rows:
 		price = 0
 		name = "Ticket"

@@ -219,6 +219,15 @@ def ticket_from_ticket_request(ticket_request):
 def get_current_state():
 	return state
 
+def get_similar_stations(message):
+	similar_stations = []
+	for word in message.split():
+		for station in Station.get_stations():
+			for station_name in station.get_name().split():
+				if word.lower() == station_name.lower():
+					similar_stations.append(station)
+	return similar_stations
+
 delay_to_station = None
 
 def process_message(message, ticket_request):
@@ -267,6 +276,13 @@ def process_message(message, ticket_request):
 			ticket_request.set_from_station(from_station)
 			state = "to"
 			return messages.multiple_texts(["Nice!", "Where would you like to go to?"])
+		elif get_similar_stations(message):
+			similar_stations = get_similar_stations(message)
+			return messages.multiple_texts([
+				"Sorry I'm not sure I know where that is",
+				"Did you mean any of the following station(s):",
+				*[station.get_name() for station in similar_stations]
+			])
 		else:
 			return messages.multiple_texts(["Sorry I'm not sure I know where that is", "Make sure you spelt that correctly and try again", "Where would you like your journey to start?"])
 	elif state == "to":
@@ -275,6 +291,13 @@ def process_message(message, ticket_request):
 			ticket_request.set_to_station(to_station)
 			state = "when"
 			return messages.multiple_texts(["Cool!", "When would you like that ticket for?"])
+		elif get_similar_stations(message):
+			similar_stations = get_similar_stations(message)
+			return messages.multiple_texts([
+				"Sorry I'm not sure I know where that is",
+				"Did you mean any of the following station(s):",
+				*[station.get_name() for station in similar_stations]
+			])
 		else:
 			return messages.multiple_texts(["Sorry I'm not sure I know where that is", "Make sure you spelt that correctly and try again", "Where would you like your journey to end?"])
 	elif state == "when":
