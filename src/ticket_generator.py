@@ -155,7 +155,7 @@ def get_tickets(from_station, to_station, when = None, arriving = False, is_retu
 			price,
 			name,
 			provider,
-			"https://ojp.nationalrail.co.uk/service/timesandfares/" + from_station.get_code() + "/" + to_station.get_code() + "/" + when.strftime("%d%m%y") + "/" + when.strftime("%H%M") + "/" + ("arr" if arriving else "dep")
+			"https://ojp.nationalrail.co.uk/service/timesandfares/" + from_station.get_code() + "/" + to_station.get_code() + "/" + when.strftime("%d%m%y") + "/" + when.strftime("%H%M") + "/" + ("arr" if arriving else "dep") + ("" if not is_return else "/" + return_when.strftime("%d%m%y") + "/" + return_when.strftime("%H%M") + "/" + ("arr" if return_arriving else "dep"))
 		))
 
 	return tickets

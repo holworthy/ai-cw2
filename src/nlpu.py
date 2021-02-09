@@ -348,7 +348,7 @@ def process_message(message, ticket_request):
 		if not dt:
 			return messages.multiple_texts(["Sorry I'm not sure what you mean", "When do you want the ticket for?"])
 		else:
-			ticket_request.set_time1(dt)
+			ticket_request.set_time2(dt)
 			state = "arrive_depart_2"
 			return messages.multiple_texts(["Awesome!", "Is that arriving or departing?"])
 	elif state == "arrive_depart_2":
