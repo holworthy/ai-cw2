@@ -96,8 +96,8 @@ def download_data_both(from_station, to_station, from_date, to_date):
 # 	download_data(Station.get_from_code("NRW"), Station.get_from_code("SSD"), datetime.datetime(year = 2020, month = i, day = 1), datetime.datetime(year = 2020, month = i, day = 1) + datetime.timedelta(days = 32))
 # 	time.sleep(2 * 60)
 
-cities = ["Cambridge", "London", "Peterborough", "Ipswich", "Heathrow", "Aberystwyth", "Bournemouth", "Portsmouth", "Southampton", "Brighton", "Stevenage", "Dover", "Reading", "Oxford", "Swindon", "Bath", "Swansea", "Cardiff", "Bristol", "Exeter", "Plymouth", "Penzance", "Leicester", "Coventry", "Watford", "Gatwick", "Ashford", "Derby", "Nottingham", "Birmingham", "Wolverhampton", "Bangor", "Stoke", "Manchester", "Blackpool", "Preston", "Bradford", "Leeds", "Doncaster", "Grimsby", "Hull", "York", "Scarborough", "Grimsby", "Newcastle", "Carlisle", "Prestwick", "Edinburgh", "Stirling", "Perth", "Aberdeen", "Inverness", "Glasgow", "Norwich"]
-city_stations = [station for station in Station.get_stations() if any(city in station.get_name() for city in cities)]
+# cities = ["Cambridge", "London", "Peterborough", "Ipswich", "Heathrow", "Aberystwyth", "Bournemouth", "Portsmouth", "Southampton", "Brighton", "Stevenage", "Dover", "Reading", "Oxford", "Swindon", "Bath", "Swansea", "Cardiff", "Bristol", "Exeter", "Plymouth", "Penzance", "Leicester", "Coventry", "Watford", "Gatwick", "Ashford", "Derby", "Nottingham", "Birmingham", "Wolverhampton", "Bangor", "Stoke", "Manchester", "Blackpool", "Preston", "Bradford", "Leeds", "Doncaster", "Grimsby", "Hull", "York", "Scarborough", "Grimsby", "Newcastle", "Carlisle", "Prestwick", "Edinburgh", "Stirling", "Perth", "Aberdeen", "Inverness", "Glasgow", "Norwich"]
+# city_stations = [station for station in Station.get_stations() if any(city in station.get_name() for city in cities)]
 
 # print(city_stations[90:])
 # exit()
@@ -119,18 +119,19 @@ city_stations = [station for station in Station.get_stations() if any(city in st
 # 	else:
 # 		time.sleep(10)
 
-[download_data_both(Station.get_from_name("Norwich"), Station.get_from_name(name), datetime.datetime.now() - datetime.timedelta(weeks = 52), datetime.datetime.now()) for name in [
-	"Peterborough",
-	"Ely",
-	"Stansted",
-	"Manchester",
-	"Birmingham",
-	"Edinburgh"
-]]
+# [download_data_both(Station.get_from_name("Norwich"), Station.get_from_name(name), datetime.datetime.now() - datetime.timedelta(weeks = 52), datetime.datetime.now()) for name in [
+# 	"Peterborough",
+# 	"Ely",
+# 	"Stansted",
+# 	"Manchester",
+# 	"Birmingham",
+# 	"Edinburgh"
+# ]]
 
 
-for city_station in city_stations[15:]:
-	if city_station != Station.get_from_name("Norwich"):
-		download_data_both(Station.get_from_name("Norwich"), city_station, datetime.datetime.now() - datetime.timedelta(weeks = 52), datetime.datetime.now())
+# for city_station in city_stations[15:]:
+# 	if city_station != Station.get_from_name("Norwich"):
+# 		download_data_both(Station.get_from_name("Norwich"), city_station, datetime.datetime.now() - datetime.timedelta(weeks = 52), datetime.datetime.now())
 
+download_data_both(Station.get_from_name(input("From: ")), Station.get_from_name(input("To: ")), datetime.datetime.now() - datetime.timedelta(weeks = 52 // 2), datetime.datetime.now()- datetime.timedelta(weeks = 0))
 
