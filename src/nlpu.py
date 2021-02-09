@@ -222,10 +222,11 @@ def get_current_state():
 def get_similar_stations(message):
 	similar_stations = []
 	for word in message.split():
-		for station in Station.get_stations():
-			for station_name in station.get_name().split():
-				if word.lower() == station_name.lower():
-					similar_stations.append(station)
+		if word.lower() != "street":
+			for station in Station.get_stations():
+				for station_name in station.get_name().split():
+					if word.lower() == station_name.lower():
+						similar_stations.append(station)
 	return similar_stations
 
 delay_to_station = None

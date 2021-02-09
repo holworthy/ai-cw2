@@ -58,7 +58,7 @@ start_queue();
 form.addEventListener("submit", (e) => {
 	e.preventDefault();
 	var content = messagebox.value;
-	chatbot_img.src = "/img/Chatbot_Processing.gif";
+	chatbot_img.src = "/img/Chatbot_Processing_2.gif";
 	// send users message to server
 	var xhr = new XMLHttpRequest();
 	xhr.open("POST", "/message");
